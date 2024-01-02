@@ -28,6 +28,7 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
   }
 
   Future<void> _fetchEventsForSelectedDay() async {
+
     final Gregorian selectedGregorianDate = _selectedDate.toGregorian();
     final DateTime startOfDay = DateTime(selectedGregorianDate.year,
         selectedGregorianDate.month, selectedGregorianDate.day, 0, 0, 0);

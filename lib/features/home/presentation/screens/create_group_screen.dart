@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../../../register/getx/user_info_getx.dart';
 
 class CreateGroupDialog extends StatefulWidget {
   @override
@@ -11,6 +15,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   TextEditingController _participantController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   List<String> _participants = [];
+  String userToken = userDataStorage.userData['token'];
 
   @override
   void dispose() {
@@ -155,14 +160,51 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     });
   }
 
-  void _createGroup() {
+  Future<void> _createGroup() async {
     if (_formKey.currentState!.validate()) {
       final groupName = _groupNameController.text;
       final description = _descriptionController.text;
-      // Use _participants list for participant names
+      final url = Uri.parse('https://dev.jalaleto.ir/api/Group/Create');
 
-      // Perform necessary actions with this data
-      // ...
+      var request = http.MultipartRequest('POST', url)
+        ..headers.addAll({
+          'Authorization': 'Bearer $userToken',
+          'accept': 'text/plain',
+        });
+
+      request.fields['Name'] = groupName;
+      request.fields['Description'] = description;
+      request.fields['Image'] = '';
+      request.fields['InvitedEmails'] = _participants[0];
+
+      try {
+        final url = Uri.parse('https://dev.jalaleto.ir/api/Group/Create');
+        final response = await request.send();
+
+        // final response = await http.post(
+        //   url,
+        //   headers: {
+        //     'Authorization': 'Bearer $userToken',
+        //     'accept': 'text/plain',
+        //   },
+        //   body: jsonEncode(requestBody),
+        // );
+
+        if (response.statusCode == 200) {
+          // final responseBody = jsonDecode(response.body);
+          // print(responseBody);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("گروه شما با موفقیت ایجاد شد."),
+            ),
+          );
+        } else {
+          print('Request failed with status: ${response.statusCode}');
+          // print('Response body: ${response.body}');
+        }
+      } catch (e) {
+        print('Error: $e');
+      }
 
       Navigator.of(context).pop();
     }

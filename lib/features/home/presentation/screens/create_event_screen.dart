@@ -56,10 +56,16 @@ class _CreateEventFormState extends State<CreateEventForm> {
     }
   }
 
-  void _submitForm() async {
+  DateTime jalaliToGregorian(Jalali jalaliDate) {
+    final gregorianDate = jalaliDate.toGregorian();
+    return DateTime(gregorianDate.year, gregorianDate.month, gregorianDate.day);
+  }
+
+    void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      print(dateTime.toIso8601String());
       final requestBody = {
         "title": title,
         "dateTime": dateTime.toIso8601String(),
@@ -69,7 +75,6 @@ class _CreateEventFormState extends State<CreateEventForm> {
         "priorityLevel": priorityLevel,
         "notes": notes,
       };
-      requestBody.forEach((key, value) {print(value);});
       try {
         final url = Uri.parse('https://dev.jalaleto.ir/api/Reminder/Create');
         final response = await http.post(
@@ -77,7 +82,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
           headers: {
             'Authorization': 'Bearer $userToken',
             'Content-Type': 'application/json',
-            'accept': 'application/json', // Add this line for accept header
+            'accept': 'application/json',
           },
           body: jsonEncode(requestBody),
         );
@@ -87,7 +92,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
           print(responseBody);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("اطلاعات شما به‌روزرسانی شد."),
+              content: Text("رویداد شما ثبت شد."),
               ),
           );
           Navigator.pop(context);
