@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:get/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
@@ -87,21 +86,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> updateProfileWithImage() async {
-    String binaryImage = await pickAndEncodeImage();
+  Future<void> updateProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    String? binaryImage;
+    print(binaryImage);
+    // if (_pickedImagePath != null) {
+    //   binaryImage = await pickAndEncodeImage();
+    // }
 
     Map<String, dynamic> updatedProfile = {
       "firstName": nameController.text,
       "lastName": lastNameContoller.text,
       "userName": usernameController.text,
       "birthday": convertDateFormat(birthdayController.text),
-      "image": binaryImage,
+      "image": binaryImage ?? '', // Sending empty string if no image selected
     };
 
-    updateProfile(updatedProfile);
-  }
-
-  Future<void> updateProfile(Map<String, dynamic> updatedProfile) async {
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
     try {
       final response = await http.post(
@@ -138,6 +141,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           );
+          setState(() {
+            _isLoading = false;
+          });
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -179,6 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
   }
+
   Future<void> _showConfirmationDialog(
       String action, VoidCallback onConfirmed) async {
     return showDialog<void>(
@@ -324,7 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _showConfirmationDialog(
                           'ذخیره تغییرات',
                               () {
-                            updateProfileWithImage();
+                            updateProfile();
                           },
                         );
                       },

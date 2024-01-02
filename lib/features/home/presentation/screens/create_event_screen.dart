@@ -56,19 +56,34 @@ class _CreateEventFormState extends State<CreateEventForm> {
     }
   }
 
-  DateTime jalaliToGregorian(Jalali jalaliDate) {
-    final gregorianDate = jalaliDate.toGregorian();
-    return DateTime(gregorianDate.year, gregorianDate.month, gregorianDate.day);
+  String gregorianToJalali(DateTime gregorianDate) {
+    final jalaliDate = Jalali.fromDateTime(gregorianDate);
+    return '${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}';
   }
 
-    void _submitForm() async {
+  DateTime jalaliWithTimeToGregorian(Jalali jalaliDate, TimeOfDay timeOfDay) {
+    final gregorianDate = jalaliDate.toGregorian();
+    return DateTime(
+      gregorianDate.year,
+      gregorianDate.month,
+      gregorianDate.day,
+      timeOfDay.hour,
+      timeOfDay.minute,
+    );
+  }
+
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      print(dateTime.toIso8601String());
+      final gregorianDateTime = jalaliWithTimeToGregorian(
+        Jalali.fromDateTime(dateTime),
+        TimeOfDay.fromDateTime(dateTime),
+      );
+      print(gregorianDateTime.toIso8601String());
       final requestBody = {
         "title": title,
-        "dateTime": dateTime.toIso8601String(),
+        "dateTime": gregorianDateTime.toIso8601String(),
         "daysBeforeToRemind": daysBeforeToRemind,
         "remindByEmail": remindByEmail,
         "repeatInterval": repeatInterval,
@@ -93,7 +108,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("رویداد شما ثبت شد."),
-              ),
+            ),
           );
           Navigator.pop(context);
         } else {
