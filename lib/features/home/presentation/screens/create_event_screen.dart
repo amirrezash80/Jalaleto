@@ -69,7 +69,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
         "priorityLevel": priorityLevel,
         "notes": notes,
       };
-
+      requestBody.forEach((key, value) {print(value);});
       try {
         final url = Uri.parse('https://dev.jalaleto.ir/api/Reminder/Create');
         final response = await http.post(
@@ -85,6 +85,12 @@ class _CreateEventFormState extends State<CreateEventForm> {
         if (response.statusCode == 200) {
           final responseBody = jsonDecode(response.body);
           print(responseBody);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("اطلاعات شما به‌روزرسانی شد."),
+              ),
+          );
+          Navigator.pop(context);
         } else {
           print('Request failed with status: ${response.statusCode}');
           print('Response body: ${response.body}');
