@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shamsi_date/shamsi_date.dart';
+import 'package:get/get.dart';
+
 import '../../../register/getx/user_info_getx.dart';
 import '../../data/events.dart';
 import 'create_event_screen.dart';
@@ -26,8 +29,10 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
 
   Future<void> _fetchEventsForSelectedDay() async {
     final Gregorian selectedGregorianDate = _selectedDate.toGregorian();
-    final DateTime startOfDay = DateTime(selectedGregorianDate.year, selectedGregorianDate.month, selectedGregorianDate.day, 0, 0, 0);
-    final DateTime endOfDay = DateTime(selectedGregorianDate.year, selectedGregorianDate.month, selectedGregorianDate.day, 23, 59, 59);
+    final DateTime startOfDay = DateTime(selectedGregorianDate.year,
+        selectedGregorianDate.month, selectedGregorianDate.day, 0, 0, 0);
+    final DateTime endOfDay = DateTime(selectedGregorianDate.year,
+        selectedGregorianDate.month, selectedGregorianDate.day, 23, 59, 59);
 
     final url = Uri.parse('https://dev.jalaleto.ir/api/Reminder/Info');
     final response = await http.post(
@@ -46,13 +51,14 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
       print(response.body);
       final Map<String, dynamic> data = jsonDecode(response.body);
       setState(() {
-        listOfEvents = (data['data'] as List).map((event) => Event.fromJson(event)).toList();
+        listOfEvents = (data['data'] as List)
+            .map((event) => Event.fromJson(event))
+            .toList();
       });
     } else {
       print('Failed to fetch events: ${response.statusCode}');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -119,11 +125,13 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(7, (index) {
-                final day = _selectedDate.addDays(index - _selectedDate.weekDay + 1);
+                final day =
+                    _selectedDate.addDays(index - _selectedDate.weekDay + 1);
                 return InkWell(
                   onTap: () {
                     setState(() {
                       _selectedDate = day;
+                      _fetchEventsForSelectedDay();
                     });
                   },
                   child: Padding(
@@ -166,33 +174,39 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
   }
 
   Widget buildEventCard(Event event) {
-    return Card(
-      elevation: 4.0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              event.dateTime.toString(), // Replace this with formatted date and time
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              event.title,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              event.notes,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
+    return GestureDetector(
+      onTap: () {
+       Navigator.push(context, MaterialPageRoute(builder: (context) =>  CreateEventForm(myEvent: event)),
+       );
+      },
+      child: Card(
+        elevation: 4.0,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                event.title,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                event.notes,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              SizedBox(height: 8),
+              Text(
+                " ${event.dateTime.minute} : ${event.dateTime.hour}",
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
         ),
       ),
     );

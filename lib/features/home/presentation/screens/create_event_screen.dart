@@ -11,7 +11,7 @@ class CreateEventForm extends StatefulWidget {
   static const String routeName = "/CreateEventForm";
   final Event? myEvent;
 
-  CreateEventForm({this.myEvent});
+  CreateEventForm({super.key, required this.myEvent});
 
   @override
   _CreateEventFormState createState() => _CreateEventFormState();
@@ -35,22 +35,25 @@ class _CreateEventFormState extends State<CreateEventForm> {
   }
 
   void getEvent() {
-    final initialEvent = widget.myEvent ?? Event(
-      title: '',
-      dateTime: DateTime.now(),
-      daysBeforeToRemind: 0,
-      remindByEmail: false,
-      repeatInterval: 1,
-      priorityLevel: 0,
-      notes: '',
-    );
-    title = initialEvent.title;
-    dateTime = initialEvent.dateTime;
-    daysBeforeToRemind = initialEvent.daysBeforeToRemind;
-    remindByEmail = initialEvent.remindByEmail;
-    repeatInterval = initialEvent.repeatInterval;
-    priorityLevel = initialEvent.priorityLevel;
-    notes = initialEvent.notes;
+    if (widget.myEvent != null) {
+      print("event ${widget.myEvent!.title}");
+      final initialEvent = widget.myEvent!;
+      title = initialEvent.title;
+      dateTime = initialEvent.dateTime;
+      daysBeforeToRemind = initialEvent.daysBeforeToRemind;
+      remindByEmail = initialEvent.remindByEmail;
+      repeatInterval = initialEvent.repeatInterval;
+      priorityLevel = initialEvent.priorityLevel;
+      notes = initialEvent.notes;
+    } else {
+      title = '';
+      dateTime = DateTime.now();
+      daysBeforeToRemind = 0;
+      remindByEmail = false;
+      repeatInterval = 1;
+      priorityLevel = 0;
+      notes = '';
+    }
   }
 
   void _submitForm() async {
