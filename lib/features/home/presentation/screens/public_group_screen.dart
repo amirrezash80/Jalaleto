@@ -129,6 +129,13 @@ class _GroupScreenState extends State<GroupScreen> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: ListTile(
+          leading: group['imageUrl'].isEmpty
+              ? CircleAvatar(
+            child: Icon(Icons.group),
+          )
+              : CircleAvatar(
+            backgroundImage: NetworkImage(group['imageUrl']),
+          ),
           title: Text(
             group['name'],
             style: TextStyle(fontWeight: FontWeight.bold),

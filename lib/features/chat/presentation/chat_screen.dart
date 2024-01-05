@@ -43,21 +43,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        print(data);
         if (data.containsKey('data')) {
-          final List<dynamic> messages = data['data'];
+          final List<dynamic> messages = data['data'] ?? [];
           setState(() {
             _messages.clear();
-            _messages.addAll(messages.map((message) => ChatMessage(
-                  senderName: message['senderName'],
-                  senderImageUrl: message['senderImageUrl'],
-                  text: message['content'],
-                  sender: message['senderName'],
-                  sentTime: DateTime.parse(message['sentTime']),
-                  isCurrentUser: message['areYouSender'] ?? false,
-                  messageId: message[
-                      'messageId'], // Assign isCurrentUser based on areYouSender
-                )));
+            _messages.addAll(messages.map((message) {
+              return ChatMessage(
+                senderName: message['senderUserId'] ?? '',
+                senderImageUrl: '', // Add senderImageUrl if available in response
+                text: message['content'] ?? '',
+                sender: message['senderUserId'] ?? '',
+                sentTime: DateTime.tryParse(message['sentTime'] ?? '') ?? DateTime.now(),
+                isCurrentUser: message['senderUserId'] == userToken,
+                messageId: message['messageId'] ?? '',
+              );
+            }));
           });
         } else {
           print('No messages available.');
@@ -98,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final bool isCurrentUser = message.isCurrentUser;
     return Row(
       mainAxisAlignment:
-          isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Container(
           margin: EdgeInsets.all(10),
