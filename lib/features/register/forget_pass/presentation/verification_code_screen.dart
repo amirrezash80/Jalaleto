@@ -41,6 +41,8 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
     userDataStorage.saveUserData(userData);
 
     print(userData['hashString']);
+    print(userData['firstName']);
+    print(userData['mail']);
     // Call signup API with updated user data
     try {
       String url = 'https://dev.jalaleto.ir/api/User/SignUp';

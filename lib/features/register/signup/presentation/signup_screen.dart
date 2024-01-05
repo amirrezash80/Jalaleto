@@ -99,8 +99,8 @@ class _SignupState extends State<SignupScreen> {
         "userName": _controllerUsername.text,
         "password": _controllerPassword.text,
         "mail": _controllerEmail.text,
-        "firstName": "test",
-        "lastName": "test",
+        "firstName": "firstName",
+        "lastName": "lastName",
         "birthday": "2023-11-30",
       };
       userDataStorage.saveUserData(userData);

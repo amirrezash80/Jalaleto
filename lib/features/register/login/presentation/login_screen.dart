@@ -29,6 +29,38 @@ class _LoginState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
+  Future<void> fetchUserProfile(String userToken) async {
+    String url = 'https://dev.jalaleto.ir/api/User/ProfileInfo';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $userToken',
+          'Accept': 'text/plain',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> userProfile = json.decode(response.body);
+          Map<String, dynamic> userData = userDataStorage.userData;
+          userData["username"] = userProfile['userName'] ?? '';
+          userData["email"] = userProfile['email'] ?? '';
+          userData["birthday"] = userProfile['birthday'] ?? '';
+          userData["firstName"] = userProfile['firstName'] ?? '';
+          userData["lastName"] = userProfile['lastName'] ?? '';
+          userDataStorage.saveUserData(userData);
+
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        print("response = ${response.body}");
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+
   Future<void> Login() async {
     String url = 'https://dev.jalaleto.ir/api/User/Login';
     setState(() {
@@ -61,8 +93,10 @@ class _LoginState extends State<LoginScreen> {
           print("token => $token");
           print(userDataStorage.userData["token"]);
           _formKey.currentState?.reset();
-          if (success)
+          if (success){
+            fetchUserProfile(token);
             Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+          }
           else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
