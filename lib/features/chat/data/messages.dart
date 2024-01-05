@@ -7,8 +7,6 @@ class ChatMessage {
   final bool isCurrentUser;
   final int messageId;
 
-  // New property to determine if the message is from the current user
-
   ChatMessage({
     required this.senderName,
     required this.senderImageUrl,
