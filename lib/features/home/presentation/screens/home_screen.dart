@@ -1,7 +1,7 @@
 import 'package:analog_clock/analog_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:roozdan/features/home/presentation/screens/public_group_screen.dart';
+import 'package:roozdan/features/groups/public_group_screen.dart';
 import 'package:roozdan/features/home/presentation/screens/timeline_screen.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:timelines/timelines.dart';

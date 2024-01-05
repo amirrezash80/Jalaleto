@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import '../../../register/getx/user_info_getx.dart';
+import '../register/getx/user_info_getx.dart';
 
 class CreateGroupDialog extends StatefulWidget {
   @override

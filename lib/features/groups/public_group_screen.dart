@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import '../../../chat/presentation/chat_screen.dart';
-import '../../../register/getx/user_info_getx.dart';
+import '../chat/presentation/chat_screen.dart';
+import '../register/getx/user_info_getx.dart';
 import 'group_screen.dart';
 
 class GroupScreen extends StatefulWidget {

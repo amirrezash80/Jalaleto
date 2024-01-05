@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:roozdan/features/home/presentation/screens/create_event_screen.dart';
-import 'package:roozdan/features/home/presentation/screens/create_group_screen.dart';
+import 'package:roozdan/features/groups/create_group_screen.dart';
 
 
 

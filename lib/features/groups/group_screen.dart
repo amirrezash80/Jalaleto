@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../chat/presentation/chat_screen.dart';
-import '../../../register/getx/user_info_getx.dart';
-import '../../widgets/snackbar.dart';
-import 'create_event_screen.dart';
+import '../chat/presentation/chat_screen.dart';
+import '../register/getx/user_info_getx.dart';
+import '../home/widgets/snackbar.dart';
+import '../home/presentation/screens/create_event_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 
@@ -103,9 +103,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: 10),
-                            // List of group members using ListView.builder
                             SizedBox(
-                              height: 200, // Set a limited height or use Expanded or Flexible
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: widget.groupData['members'].length,
