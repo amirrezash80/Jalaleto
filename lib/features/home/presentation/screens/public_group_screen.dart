@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../../chat/presentation/chat_screen.dart';
 import '../../../register/getx/user_info_getx.dart';
 
 class GroupScreen extends StatefulWidget {
@@ -135,7 +136,12 @@ class _GroupScreenState extends State<GroupScreen> {
           subtitle: Text(group['description']),
           trailing: Icon(Icons.arrow_forward_ios),
           onTap: () {
-            // Add action when tapping a group item
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(groupId: group['groupId']),
+              ),
+            );
           },
         ),
       ),

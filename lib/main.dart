@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:persian_fonts/persian_fonts.dart';
 import 'package:roozdan/features/home/data/events.dart';
 import 'package:roozdan/features/home/presentation/screens/profile_screen.dart';
+import 'features/chat/presentation/chat_screen.dart';
 import 'features/home/presentation/screens/create_event_screen.dart';
 import 'features/home/presentation/screens/create_group_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: CreateEventForm.routeName, page: () => CreateEventForm(myEvent: null,)),
         GetPage(name: ProfileScreen.routeName, page: () => ProfileScreen()),
         GetPage(name: GroupScreen.routeName, page: () => GroupScreen()),
+        // GetPage(name: ChatScreen.routeName, page: () => ChatScreen(groupId: 0,)),
 
       ],
     );
