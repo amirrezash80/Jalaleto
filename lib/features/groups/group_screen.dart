@@ -139,13 +139,28 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                       CircleAvatar(
                         backgroundImage: NetworkImage(widget.groupData['imageUrl']),
                         radius: 100,
-                        backgroundColor: Colors.grey, // Color if the image is empty
+                        backgroundColor: Colors.grey,
                       ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          getImage();
-                        },
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blueGrey,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(3.0),
+                          child: CircleAvatar(
+                            radius: 17,
+                            backgroundColor: Colors.transparent,
+                            child: IconButton(
+                              iconSize: 20,
+                              icon: Icon(Icons.edit),
+                              color: Colors.white,
+                              onPressed: () {
+                                getImage();
+                              },
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
