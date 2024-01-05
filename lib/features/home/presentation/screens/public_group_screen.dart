@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../../../chat/presentation/chat_screen.dart';
 import '../../../register/getx/user_info_getx.dart';
+import 'group_screen.dart';
 
 class GroupScreen extends StatefulWidget {
   static const routeName = "/GroupScreen";
@@ -123,33 +125,35 @@ class _GroupScreenState extends State<GroupScreen> {
   Widget buildGroupItem(Map<String, dynamic> group) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: ListTile(
-          leading: group['imageUrl'].isEmpty
-              ? CircleAvatar(
-            child: Icon(Icons.group),
-          )
-              : CircleAvatar(
-            backgroundImage: NetworkImage(group['imageUrl']),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GroupDetailsScreen(groupData: group),
+            ),
+          );
+        },
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-          title: Text(
-            group['name'],
-            style: TextStyle(fontWeight: FontWeight.bold),
+          child: ListTile(
+            leading: group['imageUrl'].isEmpty
+                ? CircleAvatar(
+              child: Icon(Icons.group),
+            )
+                : CircleAvatar(
+              backgroundImage: NetworkImage(group['imageUrl']),
+            ),
+            title: Text(
+              group['name'],
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(group['description']),
+            trailing: Icon(Icons.arrow_forward_ios),
           ),
-          subtitle: Text(group['description']),
-          trailing: Icon(Icons.arrow_forward_ios),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatScreen(groupId: group['groupId']),
-              ),
-            );
-          },
         ),
       ),
     );
