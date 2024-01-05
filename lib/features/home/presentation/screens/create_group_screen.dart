@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import '../../../register/getx/user_info_getx.dart';
 
@@ -16,6 +18,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   TextEditingController _descriptionController = TextEditingController();
   List<String> _participants = [];
   String userToken = userDataStorage.userData['token'];
+  File? _image;
 
   @override
   void dispose() {
@@ -23,6 +26,18 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     _participantController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+  Future<void> _getImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 
   @override
@@ -41,16 +56,29 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Center(
-                    child: CircleAvatar(
-                      backgroundColor: Colors.blueGrey[100],
-                      radius: 60,
-                      child: Icon(
-                        Icons.group,
-                        size: 40,
-                        color: Colors.blueGrey[700],
+                GestureDetector(
+                  onTap: _getImage,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Center(
+                      child: CircleAvatar(
+                        backgroundColor: Colors.blueGrey[100],
+                        radius: 60,
+                        child: _image != null
+                            ? ClipRRect(
+                          borderRadius: BorderRadius.circular(60),
+                          child: Image.file(
+                            _image!,
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                            : Icon(
+                          Icons.group,
+                          size: 40,
+                          color: Colors.blueGrey[700],
+                        ),
                       ),
                     ),
                   ),
@@ -174,25 +202,22 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
       request.fields['Name'] = groupName;
       request.fields['Description'] = description;
-      request.fields['Image'] = '';
-      request.fields['InvitedEmails'] = _participants[0];
+
+      if (_image != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'Image',
+          _image!.path,
+        ));
+      } else {
+        request.fields['Image'] = ''; // If no image is selected
+      }
+
+      request.fields['InvitedEmails'] = _participants.join(',');
 
       try {
-        final url = Uri.parse('https://dev.jalaleto.ir/api/Group/Create');
         final response = await request.send();
 
-        // final response = await http.post(
-        //   url,
-        //   headers: {
-        //     'Authorization': 'Bearer $userToken',
-        //     'accept': 'text/plain',
-        //   },
-        //   body: jsonEncode(requestBody),
-        // );
-
         if (response.statusCode == 200) {
-          // final responseBody = jsonDecode(response.body);
-          // print(responseBody);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("گروه شما با موفقیت ایجاد شد."),
@@ -200,7 +225,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           );
         } else {
           print('Request failed with status: ${response.statusCode}');
-          // print('Response body: ${response.body}');
         }
       } catch (e) {
         print('Error: $e');
@@ -210,3 +234,4 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     }
   }
 }
+
