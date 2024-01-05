@@ -24,7 +24,7 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
     super.initState();
     _selectedDate = Jalali.now();
     listOfEvents = [];
-    _fetchEventsForSelectedDay(); // Fetch events for the initially selected date
+    _fetchEventsForSelectedDay();
   }
 
   Future<void> _fetchEventsForSelectedDay() async {

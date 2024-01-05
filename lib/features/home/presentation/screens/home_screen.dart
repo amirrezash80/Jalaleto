@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 controller: _tabController,
                 tabs: [
                   Tab(text: 'رویدادهای من'),
-                  Tab(text: 'گروه های عمومی'),
+                  Tab(text: 'گروه ها'),
                 ],
                 onTap: (index) {
                   _tabController.animateTo(index);
@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   },
                   children: [
                     MyEventsTimeline(),
-                    PublicGroupsScreen(),
+                    GroupScreen(),
                   ],
                 ),
               ),

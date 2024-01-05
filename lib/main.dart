@@ -7,6 +7,7 @@ import 'package:roozdan/features/home/presentation/screens/profile_screen.dart';
 import 'features/home/presentation/screens/create_event_screen.dart';
 import 'features/home/presentation/screens/create_group_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
+import 'features/home/presentation/screens/public_group_screen.dart';
 import 'features/register/forget_pass/presentation/forget_pass_screen.dart';
 import 'features/register/forget_pass/presentation/reset_pass_screen.dart';
 import 'features/register/forget_pass/presentation/verification_code_screen.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff495867)),
         useMaterial3: true,
       ),
-      initialRoute: LoginScreen.routeName,
+      initialRoute: SplashScreen.routeName,
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
@@ -53,6 +54,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: VerificationCodeScreen.routeName, page: () => VerificationCodeScreen()),
         GetPage(name: CreateEventForm.routeName, page: () => CreateEventForm(myEvent: null,)),
         GetPage(name: ProfileScreen.routeName, page: () => ProfileScreen()),
+        GetPage(name: GroupScreen.routeName, page: () => GroupScreen()),
+
       ],
     );
   }

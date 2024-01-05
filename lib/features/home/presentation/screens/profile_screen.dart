@@ -1,14 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
+
 import '../../../register/getx/user_info_getx.dart';
 import '../../../register/login/presentation/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const String routeName = "/ProfileScreen";
+
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
@@ -91,78 +94,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isLoading = true;
     });
 
-    String? binaryImage;
-    print(binaryImage);
+    print(_pickedImagePath);
     // if (_pickedImagePath != null) {
     //   binaryImage = await pickAndEncodeImage();
     // }
 
     Map<String, dynamic> updatedProfile = {
-      "firstName": nameController.text,
-      "lastName": lastNameContoller.text,
-      "userName": usernameController.text,
-      "birthday": convertDateFormat(birthdayController.text),
-      "image": binaryImage ?? '', // Sending empty string if no image selected
+      "FirstName": nameController.text,
+      "LastName": lastNameContoller.text,
+      "UserName": usernameController.text,
+      "Birthday": convertDateFormat(birthdayController.text),
+      "Password": "123123123",
+      "image": _pickedImagePath ?? '',
+      // Sending empty string if no image selected
     };
-
+    updatedProfile.forEach((key, value) {print(value);});
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $userToken',
-          'Accept': 'text/plain',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(updatedProfile),
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseBody = json.decode(response.body);
-        if (responseBody['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Text("اطلاعات شما به‌روزرسانی شد."),
-              ),
-            ),
-          );
-          setState(() {
-            _isLoading = false;
-          });
-        } else {
-          String error = ('Update failed: ${responseBody['message']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Text(error),
-              ),
-            ),
-          );
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text("مشکلی در انجام فرایند پیش آمده"),
-            ),
-          ),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-        print('Request failed with status: ${response.statusCode}');
-        print("response = ${response.body}");
-      }
-    } catch (error) {
-      print('Error: $error');
-    }
+    // try {
+    //   final response = await http.post(
+    //     Uri.parse(url),
+    //     headers: {
+    //       'Authorization': 'Bearer $userToken',
+    //       'Accept': 'text/plain',
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: json.encode(updatedProfile),
+    //   );
+    //
+    //   if (response.statusCode == 200) {
+    //     Map<String, dynamic> responseBody = json.decode(response.body);
+    //     if (responseBody['success']) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         const SnackBar(
+    //           content: Directionality(
+    //             textDirection: TextDirection.rtl,
+    //             child: Text("اطلاعات شما به‌روزرسانی شد."),
+    //           ),
+    //         ),
+    //       );
+    //       setState(() {
+    //         _isLoading = false;
+    //       });
+    //     } else {
+    //       String error = ('Update failed: ${responseBody['message']}');
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(
+    //           content: Directionality(
+    //             textDirection: TextDirection.rtl,
+    //             child: Text(error),
+    //           ),
+    //         ),
+    //       );
+    //       setState(() {
+    //         _isLoading = false;
+    //       });
+    //     }
+    //   } else {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Directionality(
+    //           textDirection: TextDirection.rtl,
+    //           child: Text("مشکلی در انجام فرایند پیش آمده"),
+    //         ),
+    //       ),
+    //     );
+    //     setState(() {
+    //       _isLoading = false;
+    //     });
+    //     print('Request failed with status: ${response.statusCode}');
+    //     print("response = ${response.body}");
+    //   }
+    // } catch (error) {
+    //   print('Error: $error');
+    // }
   }
 
   String convertDateFormat(String originalDate) {
@@ -171,7 +175,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       int year = int.parse(dateComponents[0]);
       int month = int.parse(dateComponents[1]);
       int day = int.parse(dateComponents[2]);
-      String formattedDate = '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+      String formattedDate =
+          '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
       return formattedDate;
     }
     return originalDate;
@@ -249,13 +254,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: size.height,
                     child: _pickedImagePath != null
                         ? Image.file(
-                      File(_pickedImagePath!),
-                      fit: BoxFit.fill,
-                    )
+                            File(_pickedImagePath!),
+                            fit: BoxFit.fill,
+                          )
                         : Image.asset(
-                      "assets/watercolor.png",
-                      fit: BoxFit.fill,
-                    ),
+                            "assets/watercolor.png",
+                            fit: BoxFit.fill,
+                          ),
                   ),
                   GestureDetector(
                     onTap: _pickImage,
@@ -266,7 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundImage: _pickedImagePath != null
                             ? FileImage(File(_pickedImagePath!))
                             : const AssetImage("assets/Jalalito.png")
-                        as ImageProvider,
+                                as ImageProvider,
                       ),
                     ),
                   ),
@@ -287,12 +292,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     TextField(
                       controller: lastNameContoller,
-                      decoration: const InputDecoration(labelText: 'نام خانوادگی'),
+                      decoration:
+                          const InputDecoration(labelText: 'نام خانوادگی'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: usernameController,
-                      decoration: const InputDecoration(labelText: 'نام کاربری'),
+                      decoration:
+                          const InputDecoration(labelText: 'نام کاربری'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -317,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (selectedDate != null) {
                               setState(() {
                                 birthdayController.text =
-                                "${selectedDate.year}/${selectedDate.month}/${selectedDate.day}";
+                                    "${selectedDate.year}/${selectedDate.month}/${selectedDate.day}";
                               });
                             }
                           },
@@ -330,7 +337,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         _showConfirmationDialog(
                           'ذخیره تغییرات',
-                              () {
+                          () {
                             updateProfile();
                           },
                         );
@@ -353,9 +360,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onPressed: () {
             _showConfirmationDialog(
               'خروج از حساب',
-                  () {
+              () {
                 Future.delayed(const Duration(milliseconds: 500), () {
-                  Navigator.pushNamedAndRemoveUntil(context, LoginScreen.routeName, ModalRoute.withName('/'));
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, LoginScreen.routeName, ModalRoute.withName('/'));
                 });
               },
             );

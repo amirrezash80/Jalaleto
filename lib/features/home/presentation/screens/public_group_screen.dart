@@ -1,116 +1,142 @@
 import 'package:flutter/material.dart';
-import 'package:shamsi_date/shamsi_date.dart';
-import 'package:timelines/timelines.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-import '../../data/events.dart';
+import '../../../register/getx/user_info_getx.dart';
 
-class PublicGroupsScreen extends StatelessWidget {
+class GroupScreen extends StatefulWidget {
+  static const routeName = "/GroupScreen";
+
+  @override
+  _GroupScreenState createState() => _GroupScreenState();
+}
+
+class _GroupScreenState extends State<GroupScreen> {
+  String userToken = userDataStorage.userData['token'];
+  bool isLoading = false;
+  List<Map<String, dynamic>> groupData = [];
+  String selectedGroupType = 'گروه‌های عمومی';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGroupData();
+  }
+
+  Future<void> fetchGroupData() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final url =
+      Uri.parse('https://dev.jalaleto.ir/api/Group/Groups?FilterMyGroups=${selectedGroupType == 'گروه‌های من'}');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $userToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        setState(() {
+          groupData = List<Map<String, dynamic>>.from(data['data'] ?? []);
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch groups: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (error) {
+      print('Error: $error');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Event> listOfEvents = [
-      Event(
-        title: "First event",
-        dateTime: DateTime.now(), // Replace this with the actual date and time
-        daysBeforeToRemind: 0,
-        remindByEmail: false,
-        repeatInterval: 1,
-        priorityLevel: 0,
-        notes: "Mobile App",
-      ),
-      Event(
-        title: "Second Event",
-        dateTime: DateTime.now(), // Replace this with the actual date and time
-        daysBeforeToRemind: 0,
-        remindByEmail: false,
-        repeatInterval: 1,
-        priorityLevel: 0,
-        notes: "Alaki",
-      ),
-      Event(
-        title: "Third Event",
-        dateTime: DateTime.now(), // Replace this with the actual date and time
-        daysBeforeToRemind: 0,
-        remindByEmail: false,
-        repeatInterval: 1,
-        priorityLevel: 0,
-        notes: "Something",
-      ),
-      Event(
-        title: "رویداد جدید",
-        dateTime: DateTime.now(), // Replace this with the actual date and time
-        daysBeforeToRemind: 0,
-        remindByEmail: false,
-        repeatInterval: 1,
-        priorityLevel: 0,
-        notes: "Web App",
-      ),
-    ];
-
-    final List<Color> listOfColors = [
-      Colors.red,
-      Colors.green,
-      Colors.blue,
-      Colors.purple,
-    ];
-
-    return Timeline.tileBuilder(
-      theme: TimelineThemeData(
-        nodePosition: 0.1,
-        indicatorTheme: IndicatorThemeData(
-          size: 20.0,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.grey.shade200, Colors.blueGrey.shade300],
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0 , horizontal: 25),
+                  child: DropdownButton<String>(
+                    dropdownColor: Colors.blueGrey.shade300,
+                    iconEnabledColor: Colors.black,
+                    value: selectedGroupType,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedGroupType = newValue!;
+                      });
+                      fetchGroupData();
+                    },
+                    items: <String>['گروه‌های عمومی', 'گروه‌های من'].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                Expanded(
+                  child: isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : groupData.isEmpty
+                      ? Center(child: Text('هیچ گروهی موجود نیست'))
+                      : ListView.separated(
+                    itemCount: groupData.length,
+                    separatorBuilder: (context, index) => Divider(),
+                    itemBuilder: (context, index) {
+                      final group = groupData[index];
+                      return buildGroupItem(group);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        connectorTheme: ConnectorThemeData(
-          thickness: 2.5,
-        ),
-      ),
-      builder: TimelineTileBuilder.connected(
-        itemCount: listOfEvents.length,
-        contentsBuilder: (_, index) {
-          final event = listOfEvents[index];
-          return buildEventCard(event);
-        },
-        indicatorBuilder: (_, index) {
-          return DotIndicator(
-            color: listOfColors[index % listOfColors.length],
-          );
-        },
-        connectorBuilder: (_, index, type) {
-          return SolidLineConnector(
-            color: Colors.blue,
-          );
-        },
       ),
     );
   }
 
-  Widget buildEventCard(Event event) {
-    return Card(
-      elevation: 4.0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-             event.dateTime.toString(),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              event.title,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              event.notes,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
+  Widget buildGroupItem(Map<String, dynamic> group) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: ListTile(
+          title: Text(
+            group['name'],
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(group['description']),
+          trailing: Icon(Icons.arrow_forward_ios),
+          onTap: () {
+            // Add action when tapping a group item
+          },
         ),
       ),
     );
