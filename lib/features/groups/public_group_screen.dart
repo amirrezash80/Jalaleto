@@ -136,6 +136,41 @@ class _GroupScreenState extends State<GroupScreen> {
     }
   }
 
+  Future<void> fetchPopularGroupData() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final url = Uri.parse(
+          'https://dev.jalaleto.ir/api/Group/PopularGroups?cnt=5');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $userToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        setState(() {
+          groupData = List<Map<String, dynamic>>.from(data['data'] ?? []);
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch groups: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (error) {
+      print('Error: $error');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -168,9 +203,12 @@ class _GroupScreenState extends State<GroupScreen> {
                             setState(() {
                               selectedGroupType = newValue!;
                             });
+                            if(selectedGroupType =="گروه های محبوب")
+                              fetchPopularGroupData();
+                            else
                             fetchGroupData();
                           },
-                          items: <String>['گروه‌های عمومی', 'گروه‌های من']
+                          items: <String>['گروه‌های عمومی', 'گروه‌های من' , 'گروه های محبوب']
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
