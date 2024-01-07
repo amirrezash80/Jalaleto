@@ -1,4 +1,5 @@
 class Event {
+  final int reminderId;
   final String title;
   final DateTime dateTime;
   final int daysBeforeToRemind;
@@ -8,6 +9,7 @@ class Event {
   final String notes;
 
   Event({
+    required this.reminderId,
     required this.title,
     required this.dateTime,
     required this.daysBeforeToRemind,
@@ -26,11 +28,13 @@ class Event {
       repeatInterval: json['repeatInterval'] ?? 1,
       priorityLevel: json['priorityLevel'] ?? 0,
       notes: json['notes'] ?? '',
+      reminderId: json['reminderId'] ?? null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'reminderId':reminderId,
       'title': title,
       'dateTime': dateTime.toIso8601String(),
       'daysBeforeToRemind': daysBeforeToRemind,

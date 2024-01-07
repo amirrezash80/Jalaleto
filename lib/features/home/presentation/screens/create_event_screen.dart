@@ -20,6 +20,7 @@ class CreateEventForm extends StatefulWidget {
 class _CreateEventFormState extends State<CreateEventForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String userToken = userDataStorage.userData['token'];
+  late int reminderId;
   late String title;
   late DateTime dateTime;
   late int daysBeforeToRemind;
@@ -32,12 +33,14 @@ class _CreateEventFormState extends State<CreateEventForm> {
   void initState() {
     super.initState();
     getEvent();
+    print(widget.myEvent?.reminderId);
   }
 
   void getEvent() {
     if (widget.myEvent != null) {
       print("event ${widget.myEvent!.title}");
       final initialEvent = widget.myEvent!;
+      reminderId = initialEvent.reminderId;
       title = initialEvent.title;
       dateTime = initialEvent.dateTime;
       daysBeforeToRemind = initialEvent.daysBeforeToRemind;
@@ -56,6 +59,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
     }
   }
 
+
   String gregorianToJalali(DateTime gregorianDate) {
     final jalaliDate = Jalali.fromDateTime(gregorianDate);
     return '${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}';
@@ -72,18 +76,36 @@ class _CreateEventFormState extends State<CreateEventForm> {
     );
   }
 
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      // Convert the selected Persian date to Gregorian DateTime
       final gregorianDateTime = jalaliWithTimeToGregorian(
         Jalali.fromDateTime(dateTime),
         TimeOfDay.fromDateTime(dateTime),
       );
-      print(gregorianDateTime.toIso8601String());
+      print(gregorianDateTime.day);
+      print(gregorianDateTime.month);
+
+      DateTime convertToGregorian(DateTime selectedDateTime) {
+        final gregorian = Jalali.fromDateTime(selectedDateTime).toGregorian();
+        return DateTime(
+          gregorian.year,
+          gregorian.month,
+          gregorian.day,
+          selectedDateTime.hour,
+          selectedDateTime.minute,
+        );
+      }
+      // Convert the selected Gregorian date to ISO8601 format
+      final formattedGregorianDateTime = gregorianDateTime.toIso8601String();
+      print(convertToGregorian);
+      // Prepare request body using Gregorian date
       final requestBody = {
         "title": title,
-        "dateTime": gregorianDateTime.toIso8601String(),
+        "dateTime": formattedGregorianDateTime,
         "daysBeforeToRemind": daysBeforeToRemind,
         "remindByEmail": remindByEmail,
         "repeatInterval": repeatInterval,
@@ -120,6 +142,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -28,13 +28,13 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
   }
 
   Future<void> _fetchEventsForSelectedDay() async {
-
     final Gregorian selectedGregorianDate = _selectedDate.toGregorian();
     final DateTime startOfDay = DateTime(selectedGregorianDate.year,
         selectedGregorianDate.month, selectedGregorianDate.day, 0, 0, 0);
     final DateTime endOfDay = DateTime(selectedGregorianDate.year,
         selectedGregorianDate.month, selectedGregorianDate.day, 23, 59, 59);
-
+  print(startOfDay);
+  print(endOfDay);
     final url = Uri.parse('https://dev.jalaleto.ir/api/Reminder/Info');
     final response = await http.post(
       url,
