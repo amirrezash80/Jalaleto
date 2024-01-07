@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:roozdan/features/home/widgets/snackbar.dart';
 import 'package:roozdan/features/register/forget_pass/presentation/forget_pass_screen.dart';
 import 'package:roozdan/features/register/getx/user_info_getx.dart';
 
@@ -52,6 +53,7 @@ class _LoginState extends State<LoginScreen> {
           userDataStorage.saveUserData(userData);
 
       } else {
+        mySnackBar(context, response.body);
         print('Request failed with status: ${response.statusCode}');
         print("response = ${response.body}");
       }
@@ -73,7 +75,7 @@ class _LoginState extends State<LoginScreen> {
         "userName": username,
         "password": password,
       };
-      print(LoginData['userName']);
+      // print(LoginData['userName']);
       try {
         final response = await http.post(
           Uri.parse(url),
@@ -90,8 +92,8 @@ class _LoginState extends State<LoginScreen> {
           Map<String, dynamic> userData = userDataStorage.userData;
           userData['token'] = token;
           userDataStorage.saveUserData(userData);
-          print("token => $token");
-          print(userDataStorage.userData["token"]);
+          // print("token => $token");
+          // print(userDataStorage.userData["token"]);
           _formKey.currentState?.reset();
           if (success){
             fetchUserProfile(token);
