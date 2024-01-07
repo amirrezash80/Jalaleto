@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:roozdan/features/home/widgets/snackbar.dart';
 import 'package:roozdan/features/register/forget_pass/presentation/verification_code_screen.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
@@ -68,11 +69,12 @@ class _SignupState extends State<SignupScreen> {
         Map<String, dynamic> jsonResponse = json.decode(response.body);
         bool success = jsonResponse['success'];
         String message = jsonResponse['message'];
-        print("success => $success");
+        // print("success => $success");
 
         _formKey.currentState?.reset();
         Navigator.pop(context);
       } else {
+        mySnackBar(context, response.body);
         print('Request failed with status: ${response.statusCode}');
         print(response.body);
       }
@@ -92,9 +94,9 @@ class _SignupState extends State<SignupScreen> {
     String url = 'https://dev.jalaleto.ir/api/User/SendVerifyEmail';
 
     try {
-      print(_controllerUsername.text);
-      print(_controllerPassword.text);
-      print(_controllerEmail.text);
+      // print(_controllerUsername.text);
+      // print(_controllerPassword.text);
+      // print(_controllerEmail.text);
       Map<String, dynamic> userData = {
         "userName": _controllerUsername.text,
         "password": _controllerPassword.text,
@@ -104,7 +106,7 @@ class _SignupState extends State<SignupScreen> {
         "birthday": "2023-11-30",
       };
       userDataStorage.saveUserData(userData);
-      print(userDataStorage.userData["mail"]);
+      // print(userDataStorage.userData["mail"]);
 
       Map<String, dynamic> userEmail = {
         "email": _controllerEmail.text, // Use email here
@@ -126,17 +128,18 @@ class _SignupState extends State<SignupScreen> {
 
         userData['hashString'] = token;
         userDataStorage.saveUserData(userData);
-        print("username => ${userData['userName']}");
-        print("password => ${userData['password']}");
-        print("mail => ${userData['mail']}");
-        print("firstname => ${userData['firstName']}");
-        print("lastname => ${userData['lastName']}");
-        print("birthday => ${userData['birthday']}");
-        print("token => ${userData['hashString']}");
+        // print("username => ${userData['userName']}");
+        // print("password => ${userData['password']}");
+        // print("mail => ${userData['mail']}");
+        // print("firstname => ${userData['firstName']}");
+        // print("lastname => ${userData['lastName']}");
+        // print("birthday => ${userData['birthday']}");
+        // print("token => ${userData['hashString']}");
         _formKey.currentState?.reset();
         // Navigator.pop(context);
         Navigator.pushReplacementNamed(context, VerificationCodeScreen.routeName);
       } else {
+        mySnackBar(context, response.body);
         print('Request failed with status: ${response.statusCode}');
         print(response.body);
       }
