@@ -104,6 +104,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
       print(convertToGregorian);
       // Prepare request body using Gregorian date
       final requestBody = {
+        "reminderId":reminderId,
         "title": title,
         "dateTime": formattedGregorianDateTime,
         "daysBeforeToRemind": daysBeforeToRemind,
