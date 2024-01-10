@@ -171,6 +171,9 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _getMessagesOnRefresh() async {
+    await _getMessages();
+  }
   @override
   Widget build(BuildContext context) {
     print(widget.groupId);
@@ -179,21 +182,24 @@ class _ChatScreenState extends State<ChatScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(title: Text('چت')),
-        body: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _messages.length,
-                itemBuilder: (_, index) => _buildMessage(_messages[index]),
+        body: RefreshIndicator(
+          onRefresh: _getMessagesOnRefresh,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _messages.length,
+                  itemBuilder: (_, index) => _buildMessage(_messages[index]),
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: _buildChatArea(),
-            ),
-            SizedBox(height: 10),
-          ],
+              SizedBox(height: 10),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: _buildChatArea(),
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
