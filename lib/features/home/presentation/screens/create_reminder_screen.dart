@@ -7,17 +7,17 @@ import 'package:roozdan/features/register/getx/user_info_getx.dart';
 
 import '../../data/events.dart';
 
-class CreateEventForm extends StatefulWidget {
+class CreateReminderForm extends StatefulWidget {
   static const String routeName = "/CreateEventForm";
   final Event? myEvent;
 
-  CreateEventForm({super.key, required this.myEvent});
+  CreateReminderForm({super.key, required this.myEvent});
 
   @override
-  _CreateEventFormState createState() => _CreateEventFormState();
+  _CreateReminderFormState createState() => _CreateReminderFormState();
 }
 
-class _CreateEventFormState extends State<CreateEventForm> {
+class _CreateReminderFormState extends State<CreateReminderForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String userToken = userDataStorage.userData['token'];
   late int reminderId;

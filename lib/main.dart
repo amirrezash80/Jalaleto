@@ -5,7 +5,8 @@ import 'package:persian_fonts/persian_fonts.dart';
 import 'package:roozdan/features/home/data/events.dart';
 import 'package:roozdan/features/home/presentation/screens/profile_screen.dart';
 import 'features/chat/presentation/chat_screen.dart';
-import 'features/home/presentation/screens/create_event_screen.dart';
+import 'features/groups/create_event.dart';
+import 'features/home/presentation/screens/create_reminder_screen.dart';
 import 'features/groups/create_group_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
 import 'features/groups/public_group_screen.dart';
@@ -53,9 +54,10 @@ class MyApp extends StatelessWidget {
         GetPage(name: ForgetPassScreen.routeName, page: () => ForgetPassScreen()),
         GetPage(name: ResetPassScreen.routeName, page: () => ResetPassScreen()),
         GetPage(name: VerificationCodeScreen.routeName, page: () => VerificationCodeScreen()),
-        GetPage(name: CreateEventForm.routeName, page: () => CreateEventForm(myEvent: null,)),
+        GetPage(name: CreateReminderForm.routeName, page: () => CreateReminderForm(myEvent: null,)),
         GetPage(name: ProfileScreen.routeName, page: () => ProfileScreen()),
         GetPage(name: GroupScreen.routeName, page: () => GroupScreen()),
+        GetPage(name: CreateEventForm.routeName, page: () => CreateEventForm(groupId: 0,)),
         // GetPage(name: ChatScreen.routeName, page: () => ChatScreen(groupId: 0,)),
 
       ],

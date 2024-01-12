@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:roozdan/features/home/presentation/screens/create_event_screen.dart';
+import 'package:roozdan/features/home/presentation/screens/create_reminder_screen.dart';
 import 'package:roozdan/features/groups/create_group_screen.dart';
 
 
@@ -86,11 +86,11 @@ class myFloatingActionButton extends StatelessWidget {
           child: const Column(
             children: [
               Icon(Icons.add),
-              Text("ساخت رویداد جدید"),
+              Text("ساخت یادآوری جدید"),
             ],
           ),
           onPressed: () {
-            Navigator.pushNamed(context, CreateEventForm.routeName);
+            Navigator.pushNamed(context, CreateReminderForm.routeName);
 
           },
         ),

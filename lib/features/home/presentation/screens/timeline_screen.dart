@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 import '../../../register/getx/user_info_getx.dart';
 import '../../data/events.dart';
-import 'create_event_screen.dart';
+import 'create_reminder_screen.dart';
 
 class MyEventsTimeline extends StatefulWidget {
   @override
@@ -177,7 +177,7 @@ class _MyEventsTimelineState extends State<MyEventsTimeline> {
   Widget buildEventCard(Event event) {
     return GestureDetector(
       onTap: () {
-       Navigator.push(context, MaterialPageRoute(builder: (context) =>  CreateEventForm(myEvent: event)),
+       Navigator.push(context, MaterialPageRoute(builder: (context) =>  CreateReminderForm(myEvent: event)),
        );
       },
       child: Card(

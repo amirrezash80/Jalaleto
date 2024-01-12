@@ -3,9 +3,11 @@ import 'package:image_picker/image_picker.dart';
 import '../chat/presentation/chat_screen.dart';
 import '../register/getx/user_info_getx.dart';
 import '../home/widgets/snackbar.dart';
-import '../home/presentation/screens/create_event_screen.dart';
+import '../home/presentation/screens/create_reminder_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+
+import 'create_event.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> groupData;
@@ -201,7 +203,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => CreateEventForm(myEvent: null,),
+                builder: (context) => CreateEventForm(groupId: widget.groupData['groupId'],),
               ),
             );
           }
