@@ -22,7 +22,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   String userToken = userDataStorage.userData['token'];
 
-  // Add a loading flag
   bool isLoading = false;
 
   @override
@@ -110,8 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Widget avatarWidget = CircleAvatar(
       backgroundImage: NetworkImage(
-        message.senderImageUrl ??
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
+        message.senderImageUrl ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
       ),
     );
 
