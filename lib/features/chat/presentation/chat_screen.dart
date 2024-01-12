@@ -118,42 +118,44 @@ class _ChatScreenState extends State<ChatScreen> {
     return Row(
       mainAxisAlignment:
       isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!isCurrentUser) avatarWidget,
-        Container(
-          margin: EdgeInsets.all(8),
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isCurrentUser ? Colors.blue : Colors.grey[200],
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                message.senderName,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isCurrentUser ? Colors.white : Colors.black,
+        Flexible( // Wrap the Container with Flexible
+          child: Container(
+            margin: EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isCurrentUser ? Colors.blue : Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.senderName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isCurrentUser ? Colors.white : Colors.black,
+                  ),
                 ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                message.text,
-                style: TextStyle(
-                  color: isCurrentUser ? Colors.white : Colors.black,
+                SizedBox(height: 4),
+                Text(
+                  message.text,
+                  style: TextStyle(
+                    color: isCurrentUser ? Colors.white : Colors.black,
+                  ),
                 ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '${message.sentTime.hour}:${message.sentTime.minute}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isCurrentUser ? Colors.white70 : Colors.black54,
+                SizedBox(height: 4),
+                Text(
+                  '${message.sentTime.hour}:${message.sentTime.minute}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isCurrentUser ? Colors.white70 : Colors.black54,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         if (isCurrentUser) avatarWidget,
