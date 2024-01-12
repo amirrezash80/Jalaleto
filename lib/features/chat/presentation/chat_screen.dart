@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import '../../register/getx/user_info_getx.dart';
 import '../data/messages.dart';
 
-
 class ChatScreen extends StatefulWidget {
   static const routeName = "/ChatScreen";
 
@@ -23,6 +22,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   String userToken = userDataStorage.userData['token'];
 
+  // Add a loading flag
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +32,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _getMessages() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       final url = Uri.parse(
           'https://dev.jalaleto.ir/api/Message/GetMessages?GroupId=${widget.groupId}');
@@ -49,12 +55,13 @@ class _ChatScreenState extends State<ChatScreen> {
             _messages.clear();
             _messages.addAll(messages.map((message) {
               return ChatMessage(
-                senderName: message['senderUserId'] ?? '',
-                senderImageUrl: '', // Add senderImageUrl if available in response
+                senderName: message['senderName'] ?? '',
+                senderImageUrl: message['senderImageUrl'],
                 text: message['content'] ?? '',
                 sender: message['senderUserId'] ?? '',
-                sentTime: DateTime.tryParse(message['sentTime'] ?? '') ?? DateTime.now(),
-                isCurrentUser: message['senderUserId'] == userToken,
+                sentTime: DateTime.tryParse(message['sentTime'] ?? '') ??
+                    DateTime.now(),
+                isCurrentUser: message['areYouSender'],
                 messageId: message['messageId'] ?? '',
               );
             }));
@@ -67,6 +74,10 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } catch (error) {
       print('Error fetching messages: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -96,12 +107,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildMessage(ChatMessage message) {
     final bool isCurrentUser = message.isCurrentUser;
+
+    Widget avatarWidget = CircleAvatar(
+      backgroundImage: NetworkImage(
+        message.senderImageUrl ??
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
+      ),
+    );
+
     return Row(
       mainAxisAlignment:
       isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (!isCurrentUser) avatarWidget,
         Container(
-          margin: EdgeInsets.all(10),
+          margin: EdgeInsets.all(8),
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isCurrentUser ? Colors.blue : Colors.grey[200],
@@ -111,18 +132,20 @@ class _ChatScreenState extends State<ChatScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                message.sender,
+                message.senderName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: isCurrentUser ? Colors.white : Colors.black,
                 ),
               ),
+              SizedBox(height: 4),
               Text(
                 message.text,
                 style: TextStyle(
                   color: isCurrentUser ? Colors.white : Colors.black,
                 ),
               ),
+              SizedBox(height: 4),
               Text(
                 '${message.sentTime.hour}:${message.sentTime.minute}',
                 style: TextStyle(
@@ -133,13 +156,14 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           ),
         ),
+        if (isCurrentUser) avatarWidget,
       ],
     );
   }
 
   Widget _buildChatArea() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(20),
@@ -171,13 +195,13 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+
   Future<void> _getMessagesOnRefresh() async {
     await _getMessages();
   }
+
   @override
   Widget build(BuildContext context) {
-    print(widget.groupId);
-    print(userToken);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -187,10 +211,13 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.builder(
-                  itemCount: _messages.length,
-                  itemBuilder: (_, index) => _buildMessage(_messages[index]),
-                ),
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: _messages.length,
+                        itemBuilder: (_, index) =>
+                            _buildMessage(_messages[index]),
+                      ),
               ),
               SizedBox(height: 10),
               Padding(
