@@ -66,6 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           birthdayController.text = userProfile['birthday'] ?? '';
           nameController.text = userProfile['firstName'] ?? '';
           lastNameContoller.text = userProfile['lastName'] ?? '';
+          _pickedImagePath = userProfile['imagePath'] ?? '';
         });
       } else {
         print('Request failed with status: ${response.statusCode}');
