@@ -115,10 +115,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Row(
       mainAxisAlignment:
-      isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      isCurrentUser ? MainAxisAlignment.start
+          : MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (!isCurrentUser) avatarWidget,
+        if (isCurrentUser) avatarWidget,
         Flexible(
           child: Container(
             margin: EdgeInsets.all(8),
@@ -156,7 +157,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ),
-        if (isCurrentUser) avatarWidget,
+        if (!isCurrentUser) avatarWidget,
       ],
     );
   }

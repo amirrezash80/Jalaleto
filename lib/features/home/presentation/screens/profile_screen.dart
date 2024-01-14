@@ -106,7 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       "Birthday": convertDateFormat(birthdayController.text),
       "Password": "123123123",
       "image": _pickedImagePath ?? '',
-      // Sending empty string if no image selected
     };
     updatedProfile.forEach((key, value) {print(value);});
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
