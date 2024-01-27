@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../register/getx/user_info_getx.dart';
 import '../data/messages.dart';
@@ -23,18 +24,18 @@ class _ChatScreenState extends State<ChatScreen> {
   String userToken = userDataStorage.userData['token'];
 
   bool isLoading = false;
+  ScrollController _scrollController = ScrollController();
+
 
   @override
   void initState() {
     super.initState();
     _getMessages();
+    _scrollController = ScrollController();
+    // _websocketConnection();
   }
 
   Future<void> _getMessages() async {
-    setState(() {
-      isLoading = true;
-    });
-
     try {
       final url = Uri.parse(
           'https://dev.jalaleto.ir/api/Message/GetMessages?GroupId=${widget.groupId}');
@@ -46,39 +47,88 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        if (data.containsKey('data')) {
-          final List<dynamic> messages = data['data'] ?? [];
-          setState(() {
-            _messages.clear();
-            _messages.addAll(messages.map((message) {
-              return ChatMessage(
-                senderName: message['senderName'] ?? '',
-                senderImageUrl: message['senderImageUrl'],
-                text: message['content'] ?? '',
-                sender: message['senderUserId'] ?? '',
-                sentTime: DateTime.tryParse(message['sentTime'] ?? '') ??
-                    DateTime.now(),
-                isCurrentUser: message['areYouSender'],
-                messageId: message['messageId'] ?? '',
-              );
-            }));
-          });
+      if (mounted) {
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = jsonDecode(response.body);
+          if (data.containsKey('data')) {
+            final List<dynamic> messages = data['data'] ?? [];
+            setState(() {
+              _messages.clear();
+              _messages.addAll(messages.map((message) {
+                return ChatMessage(
+                  senderName: message['senderName'] ?? '',
+                  senderImageUrl: message['senderImageUrl'],
+                  text: message['content'] ?? '',
+                  sender: message['senderUserId'] ?? '',
+                  sentTime: DateTime.tryParse(message['sentTime'] ?? '') ??
+                      DateTime.now(),
+                  isCurrentUser: message['areYouSender'],
+                  messageId: message['messageId'] ?? '',
+                );
+              }));
+            });
+            _websocketConnection();
+            WidgetsBinding.instance!.addPostFrameCallback((_) {
+              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+            });
+          } else {
+            print('No messages available.');
+          }
         } else {
-          print('No messages available.');
+          print('Failed to fetch messages: ${response.statusCode}');
         }
-      } else {
-        print('Failed to fetch messages: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching messages: $error');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        print('Error fetching messages: $error');
+      }
     }
   }
+
+  void _websocketConnection() {
+    final wsUrl = Uri.parse('wss://dev.jalaleto.ir/MessageHub');
+    final channel = WebSocketChannel.connect(wsUrl);
+    channel.stream.listen((message) {
+      // print("im here");
+      // print(message.data);
+      _getMessages();
+      // _handleWebSocketMessage(message);
+    }, onError: (error) {
+      print('WebSocket error: $error');
+    }, onDone: () {
+      print('WebSocket connection closed');
+    });
+  }
+
+  // void _handleWebSocketMessage(String message) {
+  //   try {
+  //     final dynamic data = jsonDecode(message);
+  //     if (data is Map<String, dynamic> && data.containsKey('error')) {
+  //       print('WebSocket handshake error: ${data['error']}');
+  //       // Handle the WebSocket handshake error as needed
+  //     } else {
+  //       // Handle the WebSocket message and update _messages accordingly
+  //       setState(() {
+  //         _messages.add(
+  //           ChatMessage(
+  //             senderName: data['senderName'] ?? '',
+  //             senderImageUrl: data['senderImageUrl'],
+  //             text: data['content'] ?? '',
+  //             sender: data['senderUserId'] ?? '',
+  //             sentTime: DateTime.tryParse(data['sentTime'] ?? '') ?? DateTime.now(),
+  //             isCurrentUser: data['areYouSender'],
+  //             messageId: data['messageId'] ?? '',
+  //           ),
+  //         );
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error parsing WebSocket message: $e');
+  //     // Handle the parsing error as needed
+  //   }
+  // }
+
+
 
   Future<void> _sendMessage(String message) async {
     final requestBody = {
@@ -215,6 +265,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: isLoading
                     ? Center(child: CircularProgressIndicator())
                     : ListView.builder(
+                        controller: _scrollController,
                         itemCount: _messages.length,
                         itemBuilder: (_, index) =>
                             _buildMessage(_messages[index]),
