@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:persian_fonts/persian_fonts.dart';
 import 'package:roozdan/features/home/data/events.dart';
 import 'package:roozdan/features/home/presentation/screens/profile_screen.dart';
@@ -19,6 +20,7 @@ import 'features/splashscreen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
   runApp(MyApp());
 }
 

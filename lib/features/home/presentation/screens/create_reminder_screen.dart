@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:roozdan/features/register/getx/user_info_getx.dart';
 
@@ -20,7 +21,7 @@ class CreateReminderForm extends StatefulWidget {
 class _CreateReminderFormState extends State<CreateReminderForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String userToken = userDataStorage.userData['token'];
-  late int reminderId;
+  late int? reminderId;
   late String title;
   late DateTime dateTime;
   late int daysBeforeToRemind;
@@ -49,6 +50,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
       priorityLevel = initialEvent.priorityLevel;
       notes = initialEvent.notes;
     } else {
+      reminderId = null;
       title = '';
       dateTime = DateTime.now();
       daysBeforeToRemind = 0;
@@ -59,14 +61,17 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
     }
   }
 
-
   String gregorianToJalali(DateTime gregorianDate) {
     final jalaliDate = Jalali.fromDateTime(gregorianDate);
     return '${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}';
   }
 
   DateTime jalaliWithTimeToGregorian(Jalali jalaliDate, TimeOfDay timeOfDay) {
+    print(timeOfDay.hour);
+    print(timeOfDay.minute);
     final gregorianDate = jalaliDate.toGregorian();
+    print(gregorianDate.day);
+
     return DateTime(
       gregorianDate.year,
       gregorianDate.month,
@@ -76,35 +81,21 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
     );
   }
 
-
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // Convert the selected Persian date to Gregorian DateTime
       final gregorianDateTime = jalaliWithTimeToGregorian(
         Jalali.fromDateTime(dateTime),
         TimeOfDay.fromDateTime(dateTime),
       );
-      print(gregorianDateTime.day);
-      print(gregorianDateTime.month);
-
-      DateTime convertToGregorian(DateTime selectedDateTime) {
-        final gregorian = Jalali.fromDateTime(selectedDateTime).toGregorian();
-        return DateTime(
-          gregorian.year,
-          gregorian.month,
-          gregorian.day,
-          selectedDateTime.hour,
-          selectedDateTime.minute,
-        );
-      }
-      // Convert the selected Gregorian date to ISO8601 format
       final formattedGregorianDateTime = gregorianDateTime.toIso8601String();
-      print(convertToGregorian);
-      // Prepare request body using Gregorian date
+      print("gregorianDateTime ${gregorianDateTime.hour}");
+      print("gregorianDateTime ${gregorianDateTime.minute}");
+      print("reminderId ${reminderId ?? null}");
+
       final requestBody = {
-        "reminderId":reminderId,
+        "reminderId": reminderId ?? null,
         "title": title,
         "dateTime": formattedGregorianDateTime,
         "daysBeforeToRemind": daysBeforeToRemind,
@@ -113,6 +104,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
         "priorityLevel": priorityLevel,
         "notes": notes,
       };
+
       try {
         final url = Uri.parse('https://dev.jalaleto.ir/api/Reminder/Create');
         final response = await http.post(
@@ -144,10 +136,8 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    print("this is my user token $userToken");
     return Scaffold(
       appBar: AppBar(
         title: Text('ایجاد رویداد جدید'),
@@ -186,19 +176,23 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                       firstDate: Jalali(1300, 1),
                       lastDate: Jalali(1404, 12),
                     );
+
                     if (pickedDate != null) {
                       final pickedTime = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.fromDateTime(dateTime),
                       );
+
                       if (pickedTime != null) {
-                        final combinedDateTime = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
+                        final combinedDateTime = jalaliWithTimeToGregorian(
+                          pickedDate,
+                          pickedTime,
                         );
+                        // print("pickedTime.hour");
+                        print(pickedTime.hour);
+                        // print("pickedTime.minute");
+                        print(pickedTime.minute);
+
                         setState(() {
                           dateTime = combinedDateTime;
                         });
@@ -213,7 +207,8 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${DateFormat('yyyy-MM-dd   kk:mm').format(dateTime)}'),
+                        Text(
+                            '${DateFormat('yyyy-MM-dd   kk:mm').format(dateTime)}'),
                         Icon(Icons.calendar_today),
                       ],
                     ),

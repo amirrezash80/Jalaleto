@@ -209,7 +209,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           _image!.path,
         ));
       } else {
-        request.fields['Image'] = ''; // If no image is selected
+        request.fields['Image'] = '';
       }
 
       request.fields['InvitedEmails'] = _participants.join(',');

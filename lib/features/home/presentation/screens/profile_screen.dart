@@ -66,6 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           birthdayController.text = userProfile['birthday'] ?? '';
           nameController.text = userProfile['firstName'] ?? '';
           lastNameContoller.text = userProfile['lastName'] ?? '';
+          _pickedImagePath = userProfile['imagePath'] ?? '';
         });
       } else {
         print('Request failed with status: ${response.statusCode}');
@@ -106,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       "Birthday": convertDateFormat(birthdayController.text),
       "Password": "123123123",
       "image": _pickedImagePath ?? '',
-      // Sending empty string if no image selected
     };
     updatedProfile.forEach((key, value) {print(value);});
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
