@@ -89,8 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final wsUrl = Uri.parse('wss://dev.jalaleto.ir/MessageHub');
     final channel = WebSocketChannel.connect(wsUrl);
     channel.stream.listen((message) {
-      // print("im here");
       // print(message.data);
+      // print("im here");
       _getMessages();
       // _handleWebSocketMessage(message);
     }, onError: (error) {

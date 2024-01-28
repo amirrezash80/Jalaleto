@@ -58,6 +58,8 @@ class _CreateEventFormState extends State<CreateEventForm> {
               content: Text('اطلاعات با موفقیت ارسال شد.'),
             ),
           );
+
+          Navigator.pop(context, true); // Pass a value to indicate success
         } else {
           print('خطا در ارسال درخواست: ${response.statusCode}');
           print('بدنه پاسخ: ${response.body}');

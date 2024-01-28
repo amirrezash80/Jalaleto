@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -22,8 +23,9 @@ class GroupDetailsScreen extends StatefulWidget {
 class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   int _currentIndex = 1;
 
-  late File? _image; // To store the selected image file
-
+  late File? _image; 
+  
+  
   Future<void> getImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -61,6 +63,51 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     } catch (error) {
       print('Error uploading image: $error');
     }
+  }
+
+  Future<void> fetchGroupInfo() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://dev.jalaleto.ir/api/Group/GpInfo?GroupId=${widget.groupData['groupId']}'),
+        headers: {
+          'accept': 'text/plain',
+          'Authorization': 'Bearer ${userDataStorage.userData['token']}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("200");
+
+        final dynamic responseData = json.decode(response.body);
+
+        if (responseData is List && responseData.isNotEmpty) {
+
+          final Map<String, dynamic> updatedGroupData = responseData.first;
+
+          setState(() {
+            widget.groupData['name'] = updatedGroupData['name'];
+            widget.groupData['description'] = updatedGroupData['description'];
+            widget.groupData['imageUrl'] = updatedGroupData['imageUrl'];
+            widget.groupData['members'] = updatedGroupData['members'];
+            widget.groupData['events'] = updatedGroupData['events'];
+            print(widget.groupData['events']);
+          });
+        }
+      } else {
+        print('Failed to fetch group information. Status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching group information: $error');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print("initstate");
+    print(widget.groupData['groupId']);
+    print(widget.groupData['events']);
+    fetchGroupInfo();
   }
 
   @override
@@ -275,8 +322,6 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                                       'ساعت برگزاری : ${DateTime.parse(event['when']).hour}:${DateTime.parse(event['when']).minute}',
                                       style: TextStyle(fontSize: 16),
                                     ),
-
-
                                   ],
                                 ),
                                 SizedBox(height: 12),
@@ -301,7 +346,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _currentIndex = index;
           });
@@ -314,13 +359,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               ),
             );
           } else if (index == 1) {
-            Navigator.push(
+             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    CreateEventForm(groupId: widget.groupData['groupId']),
+                builder: (context) => CreateEventForm(groupId: widget.groupData['groupId']),
               ),
             );
+             print("fetch");
+
+             setState(() {
+               fetchGroupInfo();
+             });
+               print('fetched');
           }
         },
         items: [

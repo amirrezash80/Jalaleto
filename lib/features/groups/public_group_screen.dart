@@ -66,7 +66,6 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
 
-
   Future<void> searchGroups(String query) async {
     setState(() {
       isLoading = true;
