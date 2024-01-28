@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:analog_clock/analog_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
@@ -5,7 +7,7 @@ import 'package:roozdan/features/groups/public_group_screen.dart';
 import 'package:roozdan/features/home/presentation/screens/timeline_screen.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:timelines/timelines.dart';
-
+import 'package:http/http.dart' as http;
 import '../../../register/getx/user_info_getx.dart';
 import '../../data/events.dart';
 import '../../widgets/drawer/main_drawer.dart';
@@ -26,51 +28,98 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   final Jalali jNow = Jalali.now();
 
-  // final List<Event> listOfEvents = [
-  //   Event(
-  //     title: "First event",
-  //     dateTime: DateTime.now(), // Replace this with the actual date and time
-  //     daysBeforeToRemind: 0,
-  //     remindByEmail: false,
-  //     repeatInterval: 1,
-  //     priorityLevel: 0,
-  //     notes: "Mobile App",
-  //   ),
-  //   Event(
-  //     title: "Second Event",
-  //     dateTime: DateTime.now(), // Replace this with the actual date and time
-  //     daysBeforeToRemind: 0,
-  //     remindByEmail: false,
-  //     repeatInterval: 1,
-  //     priorityLevel: 0,
-  //     notes: "Alaki",
-  //   ),
-  //   Event(
-  //     title: "Third Event",
-  //     dateTime: DateTime.now(), // Replace this with the actual date and time
-  //     daysBeforeToRemind: 0,
-  //     remindByEmail: false,
-  //     repeatInterval: 1,
-  //     priorityLevel: 0,
-  //     notes: "Something",
-  //   ),
-  //   Event(
-  //     title: "رویداد جدید",
-  //     dateTime: DateTime.now(), // Replace this with the actual date and time
-  //     daysBeforeToRemind: 0,
-  //     remindByEmail: false,
-  //     repeatInterval: 1,
-  //     priorityLevel: 0,
-  //     notes: "Web App",
-  //   ),
-  // ];
+  Future<void> _handleNotificationTap() async {
 
-  final List<Color> listOfColors = [
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.purple,
-  ];
+    String authToken  = userDataStorage.userData['token'];
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://dev.jalaleto.ir/api/Notification/Get'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> notifications = json.decode(response.body)['items'];
+      notifications.forEach((e) {
+        print(e['title']);
+      });
+        _showNotifications(notifications);
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+  void _showNotifications(List<dynamic> notifications) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('یادآوری ها'),
+          content: Container(
+            width: double.maxFinite,
+            height: MediaQuery.of(context).size.height*0.5,
+            child: ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildNotificationItem(notifications[index]);
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('باشه'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationItem(Map<String, dynamic> notification) {
+    return Card(
+      elevation: 3.0,
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: ListTile(
+        leading: _buildNotificationIcon(notification['type'].toString()), // Convert to string
+        title: Text(
+          notification['title'].toString(), // Convert to string
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(notification['description'].toString()), // Convert to string
+        onTap: () {
+          // Add your logic for handling notification tap
+        },
+      ),
+    );
+  }
+
+  Widget _buildNotificationIcon(String notificationType) {
+    IconData iconData = Icons.notification_important; // Default icon
+
+    // Map notification types to corresponding icons
+    if (notificationType == 'reminder') {
+      iconData = Icons.alarm;
+    } else if (notificationType == 'event') {
+      iconData = Icons.event;
+    }
+
+    return Icon(
+      iconData,
+      color: Colors.blue,
+    );
+  }
 
 
   @override
@@ -132,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         appBar: AppBar(
           actions: [
             IconButton(
-              onPressed: () {},
+              onPressed: _handleNotificationTap,
               icon: Icon(Icons.notifications),
               color: Colors.yellowAccent,
             )
