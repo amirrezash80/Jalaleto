@@ -11,6 +11,7 @@ class CreateEventForm extends StatefulWidget {
   final int groupId;
 
   const CreateEventForm({super.key, required this.groupId});
+
   @override
   _CreateEventFormState createState() => _CreateEventFormState();
 }
@@ -23,7 +24,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
   String _description = '';
   String _location = '';
   int _memberLimit = 0;
-  String _tag = '';
+  List<String> _tags = [];
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -37,7 +38,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
         "when": _dateTime.toIso8601String(),
         "location": _location,
         "memberLimit": _memberLimit,
-        "tag": [_tag]
+        "tag": _tags,
       };
 
       try {
@@ -58,6 +59,8 @@ class _CreateEventFormState extends State<CreateEventForm> {
               content: Text('اطلاعات با موفقیت ارسال شد.'),
             ),
           );
+
+          Navigator.pop(context, true); // Pass a value to indicate success
         } else {
           print('خطا در ارسال درخواست: ${response.statusCode}');
           print('بدنه پاسخ: ${response.body}');
@@ -78,6 +81,35 @@ class _CreateEventFormState extends State<CreateEventForm> {
     }
   }
 
+  void _addTag(String value) {
+    if (value.isNotEmpty) {
+      setState(() {
+        _tags.add(value);
+        _tagController.clear();
+      });
+    }
+  }
+
+  List<Widget> _buildTagChips() {
+    return _tags.map((tag) {
+      return Chip(
+        label: Text(tag),
+        backgroundColor: Colors.blueGrey[100],
+        deleteIconColor: Colors.blueGrey[700],
+        onDeleted: () {
+          _removeTag(tag);
+        },
+      );
+    }).toList();
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _tags.remove(tag);
+    });
+  }
+
+  TextEditingController _tagController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -185,17 +217,31 @@ class _CreateEventFormState extends State<CreateEventForm> {
                   },
                 ),
                 SizedBox(height: 20),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'برچسب'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'لطفاً حداقل یک برچسب وارد کنید';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _tag = value!;
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _tagController,
+                        textAlign: TextAlign.right,
+                        decoration: InputDecoration(
+                          labelText: 'اضافه کردن برچسب',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                        ),
+                        onFieldSubmitted: _addTag,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: () {
+                        _addTag(_tagController.text);
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Wrap(
+                  children: _buildTagChips(),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
