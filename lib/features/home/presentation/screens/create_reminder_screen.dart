@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:roozdan/features/register/getx/user_info_getx.dart';
-import 'package:shamsi_date/shamsi_date.dart' as shamsi_date;
+
 import '../../data/events.dart';
 
 class CreateReminderForm extends StatefulWidget {
@@ -49,7 +50,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
       priorityLevel = initialEvent.priorityLevel;
       notes = initialEvent.notes;
     } else {
-      reminderId= null;
+      reminderId = null;
       title = '';
       dateTime = DateTime.now();
       daysBeforeToRemind = 0;
@@ -60,14 +61,17 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
     }
   }
 
-
   String gregorianToJalali(DateTime gregorianDate) {
     final jalaliDate = Jalali.fromDateTime(gregorianDate);
     return '${jalaliDate.year}/${jalaliDate.month}/${jalaliDate.day}';
   }
 
   DateTime jalaliWithTimeToGregorian(Jalali jalaliDate, TimeOfDay timeOfDay) {
+    print(timeOfDay.hour);
+    print(timeOfDay.minute);
     final gregorianDate = jalaliDate.toGregorian();
+    print(gregorianDate.day);
+
     return DateTime(
       gregorianDate.year,
       gregorianDate.month,
@@ -77,14 +81,17 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
     );
   }
 
-
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final gregorianDateTime = dateTime.toUtc();
+      final gregorianDateTime = jalaliWithTimeToGregorian(
+        Jalali.fromDateTime(dateTime),
+        TimeOfDay.fromDateTime(dateTime),
+      );
       final formattedGregorianDateTime = gregorianDateTime.toIso8601String();
-      print("gregorianDateTime $gregorianDateTime");
+      print("gregorianDateTime ${gregorianDateTime.hour}");
+      print("gregorianDateTime ${gregorianDateTime.minute}");
       print("reminderId ${reminderId ?? null}");
 
       final requestBody = {
@@ -128,7 +135,6 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -182,10 +188,13 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                           pickedDate,
                           pickedTime,
                         );
+                        // print("pickedTime.hour");
+                        print(pickedTime.hour);
+                        // print("pickedTime.minute");
+                        print(pickedTime.minute);
 
                         setState(() {
                           dateTime = combinedDateTime;
-                          // print(shamsi_date.Gregorian.fromDateTime(dateTime));
                         });
                       }
                     }
@@ -198,7 +207,8 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${DateFormat('yyyy-MM-dd   kk:mm').format(dateTime)}'),
+                        Text(
+                            '${DateFormat('yyyy-MM-dd   kk:mm').format(dateTime)}'),
                         Icon(Icons.calendar_today),
                       ],
                     ),
