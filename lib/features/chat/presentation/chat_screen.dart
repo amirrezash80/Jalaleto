@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:signalr_netcore/signalr_client.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:signalr_flutter/signalr_api.dart';
+import 'package:signalr_flutter/signalr_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../register/getx/user_info_getx.dart';
@@ -25,15 +30,30 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool isLoading = false;
   ScrollController _scrollController = ScrollController();
+  late HubConnection _hubConnection;
+  late String userId = getUserIdFromToken(userToken);
+
+  // var timer;
+
+  String getUserIdFromToken(String token) {
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    print(decodedToken);
+    return decodedToken['user_id'] ?? '';
+  }
 
 
   @override
   void initState() {
     super.initState();
     _getMessages();
+     // timer = Timer.periodic(Duration(seconds:5), (Timer t) => _getMessages());
     _scrollController = ScrollController();
-    // _websocketConnection();
+    _initSignalR();
   }
+void dispose() {
+  // timer.cancel();
+  super.dispose();
+}
 
   Future<void> _getMessages() async {
     try {
@@ -57,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
               _messages.addAll(messages.map((message) {
                 return ChatMessage(
                   senderName: message['senderName'] ?? '',
-                  senderImageUrl: message['senderImageUrl'],
+                  senderImageUrl: message['senderImageUrl'] ??  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
                   text: message['content'] ?? '',
                   sender: message['senderUserId'] ?? '',
                   sentTime: DateTime.tryParse(message['sentTime'] ?? '') ??
@@ -67,7 +87,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 );
               }));
             });
-            _websocketConnection();
+            _initSignalR();
             WidgetsBinding.instance!.addPostFrameCallback((_) {
               _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
             });
@@ -85,48 +105,61 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _websocketConnection() {
-    final wsUrl = Uri.parse('wss://dev.jalaleto.ir/MessageHub');
-    final channel = WebSocketChannel.connect(wsUrl);
-    channel.stream.listen((message) {
-      // print(message.data);
-      // print("im here");
-      _getMessages();
-      // _handleWebSocketMessage(message);
-    }, onError: (error) {
-      print('WebSocket error: $error');
-    }, onDone: () {
-      print('WebSocket connection closed');
-    });
+
+  void _initSignalR() async {
+
+    final serverUrl = "https://dev.jalaleto.ir/MessageHub";
+    _hubConnection = HubConnectionBuilder().withUrl(serverUrl).build();
+
+    _hubConnection.onclose((error) {
+      print("Connection Closed: $error");
+      _startConnection();
+    } as ClosedCallback);
+
+    await _startConnection();
   }
 
-  // void _handleWebSocketMessage(String message) {
-  //   try {
-  //     final dynamic data = jsonDecode(message);
-  //     if (data is Map<String, dynamic> && data.containsKey('error')) {
-  //       print('WebSocket handshake error: ${data['error']}');
-  //       // Handle the WebSocket handshake error as needed
-  //     } else {
-  //       // Handle the WebSocket message and update _messages accordingly
-  //       setState(() {
-  //         _messages.add(
-  //           ChatMessage(
-  //             senderName: data['senderName'] ?? '',
-  //             senderImageUrl: data['senderImageUrl'],
-  //             text: data['content'] ?? '',
-  //             sender: data['senderUserId'] ?? '',
-  //             sentTime: DateTime.tryParse(data['sentTime'] ?? '') ?? DateTime.now(),
-  //             isCurrentUser: data['areYouSender'],
-  //             messageId: data['messageId'] ?? '',
-  //           ),
-  //         );
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Error parsing WebSocket message: $e');
-  //     // Handle the parsing error as needed
-  //   }
-  // }
+  Future<void> _startConnection() async {
+    try {
+      await _hubConnection.start();
+      print("Connection established");
+
+      if (_hubConnection.state == HubConnectionState.Connected) {
+        await _hubConnection.invoke("joinGroupHub", args: [widget.groupId]).catchError((error) {
+          print("Error joining group: $error");
+        });
+      } else {
+        print("Connection is not in the 'Connected' State.");
+      }
+
+      // Set up the 'NewMessage' event handler
+      _hubConnection.on("NewMessage", _handleNewMessage);
+    } catch (error) {
+      print("Error starting connection: $error");
+    }
+  }
+
+  void _handleNewMessage(List<dynamic>? parameters) {
+    print("hi");
+    if (parameters != null && parameters.isNotEmpty) {
+      final dynamic data = parameters.first;
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            senderName: data['senderName'] ?? '',
+            senderImageUrl: data['senderImageUrl'],
+            text: data['content'] ?? '',
+            sender: data['senderUserId'] ?? '',
+            sentTime: DateTime.tryParse(data['sentTime'] ?? '') ??
+                DateTime.now(),
+            isCurrentUser: data['areYouSender'],
+            messageId: data['messageId'] ?? '',
+          ),
+        );
+      });
+    }
+  }
+
 
 
 
@@ -158,8 +191,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final bool isCurrentUser = message.isCurrentUser;
 
     Widget avatarWidget = CircleAvatar(
-      backgroundImage: NetworkImage(
-        message.senderImageUrl ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
+      backgroundImage: AssetImage(
+        'assets/Jalalito.png'
       ),
     );
 
@@ -246,7 +279,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   Future<void> _getMessagesOnRefresh() async {
     await _getMessages();
   }
@@ -256,7 +288,19 @@ class _ChatScreenState extends State<ChatScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: Text('چت')),
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("چت"),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xff455A64), Colors.blueGrey],
+                begin: Alignment.bottomLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        ),
         body: RefreshIndicator(
           onRefresh: _getMessagesOnRefresh,
           child: Column(

@@ -108,7 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       "Password": "123123123",
       "image": _pickedImagePath ?? '',
     };
-    updatedProfile.forEach((key, value) {print(value);});
+    updatedProfile.forEach((key, value) {
+      print(value);
+    });
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
     // try {
     //   final response = await http.post(
@@ -252,12 +254,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     width: size.width,
                     height: size.height,
-                    child: _pickedImagePath != null
-                        ? Image.file(
-                            File(_pickedImagePath!),
-                            fit: BoxFit.fill,
-                          )
-                        : Image.asset(
+                    child:
+                        Image.asset(
                             "assets/watercolor.png",
                             fit: BoxFit.fill,
                           ),
@@ -269,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: CircleAvatar(
                         radius: size.height * 0.1,
                         backgroundImage: _pickedImagePath != null
-                            ? FileImage(File(_pickedImagePath!))
+                            ? NetworkImage(_pickedImagePath!)
                             : const AssetImage("assets/Jalalito.png")
                                 as ImageProvider,
                       ),

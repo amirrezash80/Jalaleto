@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 
 import '../chat/presentation/chat_screen.dart';
@@ -13,8 +14,8 @@ import 'create_event.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> groupData;
-
-  GroupDetailsScreen({required this.groupData});
+  bool isMember;
+  GroupDetailsScreen({required this.groupData , required this.isMember});
 
   @override
   State<GroupDetailsScreen> createState() => _GroupDetailsScreenState();
@@ -22,10 +23,135 @@ class GroupDetailsScreen extends StatefulWidget {
 
 class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   int _currentIndex = 1;
+  String userToken = userDataStorage.userData['token'];
 
-  late File? _image; 
-  
-  
+  late File? _image;
+
+  Future<void> joinGroup(int groupId) async {
+    try {
+      final url = Uri.parse('https://dev.jalaleto.ir/api/Group/JoinGroup?GroupId=$groupId');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $userToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        mySnackBar(context, "با موفقیت به گروه اضافه شدید!");
+      } else {
+        print('Failed to join group: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error joining group: $error');
+    }
+  }
+
+
+  Future<void> showEventDetailsDialog(Map<String, dynamic> event) async {
+    bool isUserMember = event['members']
+        .any((member) => member['mail'] == userDataStorage.userData['email']);
+    bool isEventFull =
+        event['members'].length >= event['memberLimit'];
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event['name'],
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo,
+                  ),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'تاریخ برگزاری : ${Jalali
+                      .fromDateTime(DateTime.parse(event['when']))
+                      .day} / ${Jalali
+                      .fromDateTime(DateTime.parse(event['when']))
+                      .month } / ${Jalali
+                      .fromDateTime(DateTime.parse(event['when']))
+                      .year}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'زمان برگزاری: ${DateFormat('kk:mm').format(
+                      DateTime.parse(event['when']))}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'تگ‌ها: ${event['tag'].join(', ')}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'حداکثر تعداد اعضا: ${event['memberLimit']}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'افراد شرکت‌کننده: ${event['members']
+                      .map((
+                      member) => '${member['firstName']} ${member['lastName']}')
+                      .join(', ')}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'توضیحات: ${event['description']}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 20),
+                if (!isUserMember && !isEventFull)
+                  ElevatedButton(
+                    onPressed: () async {
+                      print(event['eventId']);
+                      try {
+                        final response = await http.post(
+                          Uri.parse('https://dev.jalaleto.ir/api/Event/Join?groupId=${event['groupId']}&eventId=${event['eventId']}'),
+                          headers: {
+                            'Authorization': 'Bearer $userToken',
+                          },
+                        );
+
+                        if (response.statusCode == 200) {
+                          fetchGroupInfo();
+                          mySnackBar(context, "با موفقیت عضو رویداد شدید.");
+                          Navigator.pop(context);
+                        } else {
+                          print('Failed to join event. Status code: ${response
+                              .statusCode}');
+                        }
+                      } catch (error) {
+                        print('Error joining event: $error');
+                      }
+                    },
+                    child: Text('عضویت در رویداد'),
+                  ),
+                if (isEventFull)
+                  Text(
+                    'تعداد افراد شرکت‌کننده در این رویداد به حد نصاب رسیده است.',
+                    style: TextStyle(fontSize: 16, color: Colors.red),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
   Future<void> getImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -45,7 +171,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       var request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'https://dev.jalaleto.ir/api/Group/UploadImage?groupId=${widget.groupData['groupId']}'),
+            'https://dev.jalaleto.ir/api/Group/UploadImage?groupId=${widget
+                .groupData['groupId']}'),
       );
       request.headers['Authorization'] =
       'Bearer ${userDataStorage.userData['token']}';
@@ -68,7 +195,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   Future<void> fetchGroupInfo() async {
     try {
       final response = await http.post(
-        Uri.parse('https://dev.jalaleto.ir/api/Group/GpInfo?GroupId=${widget.groupData['groupId']}'),
+        Uri.parse('https://dev.jalaleto.ir/api/Group/GpInfo?GroupId=${widget
+            .groupData['groupId']}'),
         headers: {
           'accept': 'text/plain',
           'Authorization': 'Bearer ${userDataStorage.userData['token']}',
@@ -81,7 +209,6 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         final dynamic responseData = json.decode(response.body);
 
         if (responseData is List && responseData.isNotEmpty) {
-
           final Map<String, dynamic> updatedGroupData = responseData.first;
 
           setState(() {
@@ -94,7 +221,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           });
         }
       } else {
-        print('Failed to fetch group information. Status code: ${response.statusCode}');
+        print('Failed to fetch group information. Status code: ${response
+            .statusCode}');
       }
     } catch (error) {
       print('Error fetching group information: $error');
@@ -114,11 +242,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(widget.groupData['name']),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blueGrey, Colors.indigo],
+              colors: [Color(0xff455A64), Colors.blueGrey],
               begin: Alignment.bottomLeft,
               end: Alignment.bottomRight,
             ),
@@ -196,7 +325,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                                       style: TextStyle(fontSize: 16),
                                     ),
                                     subtitle: Text(
-                                      '${member['userName']} - ${member['mail']}',
+                                      '${member['mail']}',
                                       style: TextStyle(fontSize: 14),
                                     ),
                                   );
@@ -260,7 +389,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             Container(
               padding: EdgeInsets.all(20.0),
               decoration: BoxDecoration(
-                color: Colors.blue.shade200,
+                color: Colors.blueGrey.shade200,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
@@ -293,7 +422,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                         ),
                         child: InkWell(
                           onTap: () {
-                            // Handle event tap if needed
+                            showEventDetailsDialog(event);
                           },
                           child: Container(
                             padding: EdgeInsets.all(15),
@@ -315,11 +444,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                                   MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'تاریخ برگزاری : ${Jalali.fromDateTime(DateTime.parse(event['when'])).day} / ${Jalali.fromDateTime(DateTime.parse(event['when'])).month } / ${Jalali.fromDateTime(DateTime.parse(event['when'])).year}',
+                                      'تاریخ برگزاری : ${Jalali
+                                          .fromDateTime(
+                                          DateTime.parse(event['when']))
+                                          .day} / ${Jalali
+                                          .fromDateTime(
+                                          DateTime.parse(event['when']))
+                                          .month } / ${Jalali
+                                          .fromDateTime(
+                                          DateTime.parse(event['when']))
+                                          .year}',
                                       style: TextStyle(fontSize: 16),
                                     ),
                                     Text(
-                                      'ساعت برگزاری : ${DateTime.parse(event['when']).hour}:${DateTime.parse(event['when']).minute}',
+                                      'ساعت برگزاری : ${DateTime
+                                          .parse(event['when'])
+                                          .hour}:${DateTime
+                                          .parse(event['when'])
+                                          .minute}',
                                       style: TextStyle(fontSize: 16),
                                     ),
                                   ],
@@ -344,7 +486,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: widget.isMember ?
+      BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) async {
           setState(() {
@@ -359,18 +502,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               ),
             );
           } else if (index == 1) {
-             await Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => CreateEventForm(groupId: widget.groupData['groupId']),
+                builder: (context) =>
+                    CreateEventForm(groupId: widget.groupData['groupId']),
               ),
             );
-             print("fetch");
+            print("fetch");
 
-             setState(() {
-               fetchGroupInfo();
-             });
-               print('fetched');
+            setState(() {
+              fetchGroupInfo();
+            });
+            print('fetched');
           }
         },
         items: [
@@ -383,6 +527,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             label: 'اضافه کردن رویداد جدید',
           ),
         ],
+      ) :
+      SizedBox(
+        height: 80,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.blueGrey.shade100,
+            onPrimary: Colors.black,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20), // button's shape
+            ),
+          ),
+
+          onPressed: () async {
+              joinGroup(widget.groupData['groupId']);
+          },
+          child: Text('عضویت در گروه'),
+        ),
       ),
     );
   }
