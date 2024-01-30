@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
+import 'package:shamsi_date/shamsi_date.dart' as shamsi;
 
 import '../register/getx/user_info_getx.dart';
 
@@ -20,6 +21,7 @@ class _CreateEventFormState extends State<CreateEventForm> {
   String userToken = userDataStorage.userData['token'];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   DateTime _dateTime = DateTime.now();
+   DateTime jalaliDate = DateTime.now() ;
   String _name = '';
   String _description = '';
   String _location = '';
@@ -191,6 +193,21 @@ class _CreateEventFormState extends State<CreateEventForm> {
     }
   }
 
+  DateTime jalaliWithTimeToGregorian(Jalali jalaliDate, TimeOfDay timeOfDay) {
+    print(timeOfDay.hour);
+    print(timeOfDay.minute);
+    final gregorianDate = jalaliDate.toGregorian();
+    print(gregorianDate.day);
+
+    return DateTime(
+      gregorianDate.year,
+      gregorianDate.month,
+      gregorianDate.day,
+      timeOfDay.hour,
+      timeOfDay.minute,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,19 +264,30 @@ class _CreateEventFormState extends State<CreateEventForm> {
                       firstDate: Jalali(1300, 1),
                       lastDate: Jalali(1404, 12),
                     );
+
                     if (pickedDate != null) {
                       final pickedTime = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.fromDateTime(_dateTime),
                       );
+
                       if (pickedTime != null) {
-                        final combinedDateTime = DateTime(
+                        jalaliDate = DateTime(
                           pickedDate.year,
                           pickedDate.month,
                           pickedDate.day,
                           pickedTime.hour,
                           pickedTime.minute,
                         );
+                        final combinedDateTime = jalaliWithTimeToGregorian(
+                          pickedDate,
+                          pickedTime,
+                        );
+                        // // print("pickedTime.hour");
+                        // print(pickedTime.hour);
+                        // // print("pickedTime.minute");
+                        // print(pickedTime.minute);
+                        print(combinedDateTime);
                         setState(() {
                           _dateTime = combinedDateTime;
                         });
@@ -267,11 +295,15 @@ class _CreateEventFormState extends State<CreateEventForm> {
                     }
                   },
                   child: InputDecorator(
-                    decoration: InputDecoration(labelText: 'تاریخ و زمان'),
+                    decoration: InputDecoration(
+                      labelText: 'تاریخ و زمان',
+                      border: OutlineInputBorder(),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${DateFormat('yyyy-MM-dd   kk:mm').format(_dateTime)}'),
+                        Text(
+                            '${DateFormat('yyyy-MM-dd   kk:mm').format(jalaliDate)}'),
                         Icon(Icons.calendar_today),
                       ],
                     ),

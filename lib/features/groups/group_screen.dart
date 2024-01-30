@@ -79,13 +79,15 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 SizedBox(height: 15),
                 Text(
                   'تاریخ برگزاری : ${Jalali
-                      .fromDateTime(DateTime.parse(event['when']))
+                      .fromDateTime(
+                      DateTime.parse(event['when']))
                       .day} / ${Jalali
-                      .fromDateTime(DateTime.parse(event['when']))
+                      .fromDateTime(
+                      DateTime.parse(event['when']))
                       .month } / ${Jalali
-                      .fromDateTime(DateTime.parse(event['when']))
-                      .year}',
-                  style: TextStyle(fontSize: 16),
+                      .fromDateTime(
+                      DateTime.parse(event['when']))
+                      .year}',                  style: TextStyle(fontSize: 16),
                 ),
                 Text(
                   'زمان برگزاری: ${DateFormat('kk:mm').format(
