@@ -56,7 +56,12 @@ class _GroupScreenState extends State<GroupScreen> {
       );
 
       if (response.statusCode == 200) {
-        mySnackBar(context, "با موفقیت به گروه اضافه شدید!");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('شما با موفقیت عضو گروه شدید.'),
+        ));
+        setState(() async {
+          await fetchGroupData();
+        });
       } else {
         mySnackBar(context, "خطا در عضویت گروه");
         print('Failed to join group: ${response.statusCode}');

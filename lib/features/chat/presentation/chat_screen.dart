@@ -142,17 +142,19 @@ class _ChatScreenState extends State<ChatScreen> {
     if (parameters != null && parameters.isNotEmpty) {
       final dynamic data = parameters.first;
       setState(() {
-        print(userId == data['senderUserId']);
+        print(data['senderUserId']);
+        print(userId);
+        print("user id = ${userId == data['senderUserId']}");
         print(data['areYouSender']);
+        print(userId.toString() == data['areYouSender']);
         _messages.add(
           ChatMessage(
             senderName: data['senderName'] ?? '',
             senderImageUrl: data['senderImageUrl'],
             text: data['content'] ?? '',
             sender: data['senderUserId'] ?? '',
-            sentTime:
-                DateTime.tryParse(data['sentTime'] ?? '') ?? DateTime.now(),
-            isCurrentUser: userId == data['userId'],
+            sentTime: DateTime.now(),
+            isCurrentUser: userId.toString() == data['senderUserId'].toString(),
             messageId: data['messageId'] ?? '',
           ),
         );

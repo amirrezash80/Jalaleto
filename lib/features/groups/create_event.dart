@@ -63,7 +63,8 @@ class _CreateEventFormState extends State<CreateEventForm> {
           );
 
           Navigator.pop(context, true); // Pass a value to indicate success
-        } else {
+        }
+        else {
           print('خطا در ارسال درخواست: ${response.statusCode}');
           print('بدنه پاسخ: ${response.body}');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -112,86 +113,6 @@ class _CreateEventFormState extends State<CreateEventForm> {
   }
 
   TextEditingController _tagController = TextEditingController();
-
-  void _showEventDialog(Map<String, dynamic> eventData) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('جزئیات رویداد'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('تاریخ برگزاری رویداد: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(eventData['when']))}'),
-              Text('زمان برگزاری رویداد: ${DateFormat('kk:mm').format(DateTime.parse(eventData['when']))}'),
-              Text('تگ های این رویداد: ${eventData['tag'].join(', ')}'),
-              Text('حداکثر تعداد اعضا: ${eventData['memberLimit']}'),
-              Text('افراد شرکت کننده: ${eventData['members'].map((member) => member['userName']).join(', ')}'),
-              Text('توضیحات: ${eventData['description']}'),
-              if (!_isUserParticipant(eventData['members']))
-                ElevatedButton(
-                  onPressed: () {
-                    _joinEvent(eventData['eventId']);
-                  },
-                  child: Text('عضویت در رویداد'),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  bool _isUserParticipant(List<dynamic> members) {
-    final String userMail = userDataStorage.userData['mail'];
-    return members.any((member) => member['mail'] == userMail);
-  }
-
-  void _joinEvent(String eventId) async {
-    final url = Uri.parse('https://dev.jalaleto.ir/api/Event/JoinEvent');
-    final Map<String, dynamic> requestData = {
-      'groupId':widget.groupId,
-      "eventId": eventId,
-    };
-
-    try {
-      final response = await http.post(
-        url,
-        headers: <String, String>{
-          'Authorization': 'Bearer $userToken',
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: jsonEncode(requestData),
-      );
-
-      if (response.statusCode == 200) {
-        print('عضویت با موفقیت انجام شد.');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('عضویت با موفقیت انجام شد.'),
-          ),
-        );
-        Navigator.pop(context, true); // Pass a value to indicate success
-      } else {
-        print('خطا در عضویت: ${response.statusCode}');
-        print('بدنه پاسخ: ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('مشکلی در عضویت به وجود آمد.'),
-          ),
-        );
-      }
-    } catch (e) {
-      print('خطا: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('مشکلی در عضویت به وجود آمد.'),
-        ),
-      );
-    }
-  }
 
   DateTime jalaliWithTimeToGregorian(Jalali jalaliDate, TimeOfDay timeOfDay) {
     print(timeOfDay.hour);

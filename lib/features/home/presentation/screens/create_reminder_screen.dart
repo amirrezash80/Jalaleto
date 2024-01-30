@@ -29,6 +29,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
   late int repeatInterval;
   late int priorityLevel;
   late String notes;
+  DateTime jalaliDate = DateTime.now() ;
 
   @override
   void initState() {
@@ -162,7 +163,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                 TextFormField(
                   initialValue: title,
                   decoration: InputDecoration(
-                    labelText: 'عنوان یادآری',
+                    labelText: 'عنوان یادآوری',
                     border: OutlineInputBorder(),
                   ),
                   style: TextStyle(fontSize: 18.0),
@@ -193,15 +194,22 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                       );
 
                       if (pickedTime != null) {
+                        jalaliDate = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
                         final combinedDateTime = jalaliWithTimeToGregorian(
                           pickedDate,
                           pickedTime,
                         );
-                        // print("pickedTime.hour");
-                        print(pickedTime.hour);
-                        // print("pickedTime.minute");
-                        print(pickedTime.minute);
-
+                        // // print("pickedTime.hour");
+                        // print(pickedTime.hour);
+                        // // print("pickedTime.minute");
+                        // print(pickedTime.minute);
+                        print(combinedDateTime);
                         setState(() {
                           dateTime = combinedDateTime;
                         });
@@ -217,7 +225,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                            '${DateFormat('yyyy-MM-dd   kk:mm').format(dateTime)}'),
+                            '${DateFormat('yyyy-MM-dd   kk:mm').format(jalaliDate)}'),
                         Icon(Icons.calendar_today),
                       ],
                     ),

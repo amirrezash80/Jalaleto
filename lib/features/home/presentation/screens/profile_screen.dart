@@ -46,7 +46,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> fetchUserProfile() async {
+  Future<void> fetchUserProfile() async
+  {
     String url = 'https://dev.jalaleto.ir/api/User/ProfileInfo';
     try {
       final response = await http.post(
@@ -105,70 +106,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
       "LastName": lastNameContoller.text,
       "UserName": usernameController.text,
       "Birthday": convertDateFormat(birthdayController.text),
-      "Password": "123123123",
       "image": _pickedImagePath ?? '',
     };
     updatedProfile.forEach((key, value) {
       print(value);
     });
     String url = 'https://dev.jalaleto.ir/api/User/EditProfile';
-    // try {
-    //   final response = await http.post(
-    //     Uri.parse(url),
-    //     headers: {
-    //       'Authorization': 'Bearer $userToken',
-    //       'Accept': 'text/plain',
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: json.encode(updatedProfile),
-    //   );
-    //
-    //   if (response.statusCode == 200) {
-    //     Map<String, dynamic> responseBody = json.decode(response.body);
-    //     if (responseBody['success']) {
-    //       ScaffoldMessenger.of(context).showSnackBar(
-    //         const SnackBar(
-    //           content: Directionality(
-    //             textDirection: TextDirection.rtl,
-    //             child: Text("اطلاعات شما به‌روزرسانی شد."),
-    //           ),
-    //         ),
-    //       );
-    //       setState(() {
-    //         _isLoading = false;
-    //       });
-    //     } else {
-    //       String error = ('Update failed: ${responseBody['message']}');
-    //       ScaffoldMessenger.of(context).showSnackBar(
-    //         SnackBar(
-    //           content: Directionality(
-    //             textDirection: TextDirection.rtl,
-    //             child: Text(error),
-    //           ),
-    //         ),
-    //       );
-    //       setState(() {
-    //         _isLoading = false;
-    //       });
-    //     }
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(
-    //         content: Directionality(
-    //           textDirection: TextDirection.rtl,
-    //           child: Text("مشکلی در انجام فرایند پیش آمده"),
-    //         ),
-    //       ),
-    //     );
-    //     setState(() {
-    //       _isLoading = false;
-    //     });
-    //     print('Request failed with status: ${response.statusCode}');
-    //     print("response = ${response.body}");
-    //   }
-    // } catch (error) {
-    //   print('Error: $error');
-    // }
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $userToken',
+          'Accept': 'text/plain',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updatedProfile),
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseBody = json.decode(response.body);
+        if (responseBody['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text("اطلاعات شما به‌روزرسانی شد."),
+              ),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+        } else {
+          String error = ('Update failed: ${responseBody['message']}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(error),
+              ),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text("مشکلی در انجام فرایند پیش آمده"),
+            ),
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        print('Request failed with status: ${response.statusCode}');
+        print("response = ${response.body}");
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
   }
 
   String convertDateFormat(String originalDate) {

@@ -53,13 +53,11 @@ class _LoginState extends State<LoginScreen> {
           userDataStorage.saveUserData(userData);
 
       } else {
-        mySnackBar(context, response.body);
-        print('خطا در ورود: ${response.statusCode}');
+             print('خطا در ورود: ${response.statusCode}');
         print("response = ${response.body}");
       }
     } catch (error) {
-      mySnackBar(context, "خطا در ورود");
-      print('Error: $error');
+        print('Error: $error');
     }
   }
 
@@ -87,45 +85,39 @@ class _LoginState extends State<LoginScreen> {
         );
         if (response.statusCode == 200) {
           Map<String, dynamic> jsonResponse = json.decode(response.body);
-          bool success = jsonResponse['success'];
-          String message = jsonResponse['message'];
-          String token = jsonResponse['token'];
-          Map<String, dynamic> userData = userDataStorage.userData;
-          userData['token'] = token;
-          userDataStorage.saveUserData(userData);
-          // print("token => $token");
-          // print(userDataStorage.userData["token"]);
-          _formKey.currentState?.reset();
-          if (success){
-            fetchUserProfile(token);
-            Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-          }
-          else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: Theme
-                    .of(context)
-                    .colorScheme
-                    .secondary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                behavior: SnackBarBehavior.floating,
-                content: Container(
-                  alignment: Alignment.center,
-                  child: Text("نام کاربری یا رمز عبور اشتباه است ! "),
-                ),
-              ),
-            );
-          }
+
+          bool? success = jsonResponse['success'];
+          String? message = jsonResponse['message'];
+          String? token = jsonResponse['token'];
+
+          if (success != null && message != null && token != null) {
+            Map<String, dynamic> userData = userDataStorage.userData;
+            userData['token'] = token;
+            userDataStorage.saveUserData(userData);
+
+            _formKey.currentState?.reset();
+
+            if (success) {
+              fetchUserProfile(token);
+              Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text("نام کاربری یا رمز عبور اشتباه است ."),
+              ));
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("نام کاربری یا رمز عبور اشتباه است ."),
+            ));          }
         } else {
           print('Request failed with status: ${response.statusCode}');
           print(response.body);
         }
+
+        // catch (error) {
+        //   print('Error: $error');
+        // }
       }
-      // catch (error) {
-      //   print('Error: $error');
-      // }
       finally {
         setState(() {
           _isLoading = false;

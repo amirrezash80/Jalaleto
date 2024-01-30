@@ -40,6 +40,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
       if (response.statusCode == 200) {
         mySnackBar(context, "با موفقیت به گروه اضافه شدید!");
+        setState(() {
+          widget.isMember = true;
+        });
       } else {
         print('Failed to join group: ${response.statusCode}');
       }
@@ -197,8 +200,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   Future<void> fetchGroupInfo() async {
     try {
       final response = await http.post(
-        Uri.parse('https://dev.jalaleto.ir/api/Group/GpInfo?GroupId=${widget
-            .groupData['groupId']}'),
+        Uri.parse('https://dev.jalaleto.ir/api/Group/GpInfo?GroupId=${widget.groupData['groupId']}'),
         headers: {
           'accept': 'text/plain',
           'Authorization': 'Bearer ${userDataStorage.userData['token']}',
@@ -206,25 +208,35 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
       );
 
       if (response.statusCode == 200) {
-        print("200");
-
         final dynamic responseData = json.decode(response.body);
 
-        if (responseData is List && responseData.isNotEmpty) {
-          final Map<String, dynamic> updatedGroupData = responseData.first;
+        // Check if 'data' field is present and not empty
+        if (responseData.containsKey('data') && responseData['data'] is List && responseData['data'].isNotEmpty) {
+          final List<dynamic> groups = responseData['data'];
 
-          setState(() {
-            widget.groupData['name'] = updatedGroupData['name'];
-            widget.groupData['description'] = updatedGroupData['description'];
-            widget.groupData['imageUrl'] = updatedGroupData['imageUrl'];
-            widget.groupData['members'] = updatedGroupData['members'];
-            widget.groupData['events'] = updatedGroupData['events'];
-            print(widget.groupData['events']);
-          });
+          // Check if the last group has 'events' field
+          if (groups.last.containsKey('events')) {
+            final List<dynamic> events = groups.last['events'];
+              print(events);
+            // Check if the 'events' field is not empty
+            if (events.isNotEmpty) {
+              setState(() {
+                widget.groupData['events'] = events; // Update the events
+              });
+
+              final Map<String, dynamic> lastEvent = events.last;
+              print('Last Event: $lastEvent');
+            } else {
+              print('No events found in the last group.');
+            }
+          } else {
+            print('Last group does not have an "events" field.');
+          }
+        } else {
+          print('Invalid or empty "data" field in the response.');
         }
       } else {
-        print('Failed to fetch group information. Status code: ${response
-            .statusCode}');
+        print('Failed to fetch group information. Status code: ${response.statusCode}');
       }
     } catch (error) {
       print('Error fetching group information: $error');
@@ -237,7 +249,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     print("initstate");
     print(widget.groupData['groupId']);
     print(widget.groupData['events']);
-    fetchGroupInfo();
+    // fetchGroupInfo();
   }
 
   @override
@@ -511,12 +523,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                     CreateEventForm(groupId: widget.groupData['groupId']),
               ),
             );
-            print("fetch");
-
             setState(() {
               fetchGroupInfo();
             });
-            print('fetched');
           }
         },
         items: [
