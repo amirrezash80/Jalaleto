@@ -195,7 +195,15 @@ class _CreateEventFormState extends State<CreateEventForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ایجاد رویداد جدید'),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xff455A64), Colors.blueGrey],
+              begin: Alignment.bottomLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),        title: Text('ایجاد رویداد جدید'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

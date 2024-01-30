@@ -54,10 +54,11 @@ class _LoginState extends State<LoginScreen> {
 
       } else {
         mySnackBar(context, response.body);
-        print('Request failed with status: ${response.statusCode}');
+        print('خطا در ورود: ${response.statusCode}');
         print("response = ${response.body}");
       }
     } catch (error) {
+      mySnackBar(context, "خطا در ورود");
       print('Error: $error');
     }
   }

@@ -58,6 +58,7 @@ class _GroupScreenState extends State<GroupScreen> {
       if (response.statusCode == 200) {
         mySnackBar(context, "با موفقیت به گروه اضافه شدید!");
       } else {
+        mySnackBar(context, "خطا در عضویت گروه");
         print('Failed to join group: ${response.statusCode}');
       }
     } catch (error) {

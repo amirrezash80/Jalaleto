@@ -3,11 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:signalr_netcore/signalr_client.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:signalr_flutter/signalr_api.dart';
-import 'package:signalr_flutter/signalr_flutter.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:signalr_pure/signalr_pure.dart';
 
 import '../../register/getx/user_info_getx.dart';
 import '../data/messages.dart';
@@ -31,29 +28,29 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isLoading = false;
   ScrollController _scrollController = ScrollController();
   late HubConnection _hubConnection;
-  late String userId = getUserIdFromToken(userToken);
+  late String userId ;
 
   // var timer;
 
   String getUserIdFromToken(String token) {
     Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
     print(decodedToken);
-    return decodedToken['user_id'] ?? '';
+    return decodedToken['UserId'] ?? '';
   }
-
 
   @override
   void initState() {
     super.initState();
     _getMessages();
-     // timer = Timer.periodic(Duration(seconds:5), (Timer t) => _getMessages());
+     userId = getUserIdFromToken(userToken);
     _scrollController = ScrollController();
     _initSignalR();
   }
-void dispose() {
-  // timer.cancel();
-  super.dispose();
-}
+
+  void dispose() {
+    // timer.cancel();
+    super.dispose();
+  }
 
   Future<void> _getMessages() async {
     try {
@@ -77,7 +74,8 @@ void dispose() {
               _messages.addAll(messages.map((message) {
                 return ChatMessage(
                   senderName: message['senderName'] ?? '',
-                  senderImageUrl: message['senderImageUrl'] ??  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
+                  senderImageUrl: message['senderImageUrl'] ??
+                      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/2048px-User-avatar.svg.png',
                   text: message['content'] ?? '',
                   sender: message['senderUserId'] ?? '',
                   sentTime: DateTime.tryParse(message['sentTime'] ?? '') ??
@@ -89,7 +87,8 @@ void dispose() {
             });
             _initSignalR();
             WidgetsBinding.instance!.addPostFrameCallback((_) {
-              _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+              _scrollController
+                  .jumpTo(_scrollController.position.maxScrollExtent);
             });
           } else {
             print('No messages available.');
@@ -105,63 +104,61 @@ void dispose() {
     }
   }
 
-
   void _initSignalR() async {
-
-    final serverUrl = "https://dev.jalaleto.ir/MessageHub";
-    _hubConnection = HubConnectionBuilder().withUrl(serverUrl).build();
-
-    _hubConnection.onclose((error) {
-      print("Connection Closed: $error");
-      _startConnection();
-    } as ClosedCallback);
-
-    await _startConnection();
-  }
-
-  Future<void> _startConnection() async {
     try {
-      await _hubConnection.start();
-      print("Connection established");
+      final builder = HubConnectionBuilder()
+        ..url = 'https://dev.jalaleto.ir/MessageHub'
+        ..logLevel = LogLevel.information
+        ..reconnect = true;
 
-      if (_hubConnection.state == HubConnectionState.Connected) {
-        await _hubConnection.invoke("joinGroupHub", args: [widget.groupId]).catchError((error) {
-          print("Error joining group: $error");
-        });
-      } else {
-        print("Connection is not in the 'Connected' State.");
-      }
+      _hubConnection = builder.build();
 
-      // Set up the 'NewMessage' event handler
+      _hubConnection.onclose((error) {
+        print("Connection Closed: $error");
+      });
+
       _hubConnection.on("NewMessage", _handleNewMessage);
+
+      // Start the connection
+      await _hubConnection.startAsync().then((_) async {
+        if (_hubConnection.state == HubConnectionState.connected) {
+          print("Connection established");
+
+          await _hubConnection
+              .invokeAsync("joinGroupHub", [widget.groupId])
+              .catchError((error) {
+            print("Error joining group: $error");
+          });
+        } else {
+          print("Connection is not in the 'Connected' state.");
+        }
+      });
     } catch (error) {
-      print("Error starting connection: $error");
+      print("Error initializing SignalR: $error");
     }
   }
 
   void _handleNewMessage(List<dynamic>? parameters) {
-    print("hi");
     if (parameters != null && parameters.isNotEmpty) {
       final dynamic data = parameters.first;
       setState(() {
+        print(userId == data['senderUserId']);
+        print(data['areYouSender']);
         _messages.add(
           ChatMessage(
             senderName: data['senderName'] ?? '',
             senderImageUrl: data['senderImageUrl'],
             text: data['content'] ?? '',
             sender: data['senderUserId'] ?? '',
-            sentTime: DateTime.tryParse(data['sentTime'] ?? '') ??
-                DateTime.now(),
-            isCurrentUser: data['areYouSender'],
+            sentTime:
+                DateTime.tryParse(data['sentTime'] ?? '') ?? DateTime.now(),
+            isCurrentUser: userId == data['userId'],
             messageId: data['messageId'] ?? '',
           ),
         );
       });
     }
   }
-
-
-
 
   Future<void> _sendMessage(String message) async {
     final requestBody = {
@@ -191,15 +188,12 @@ void dispose() {
     final bool isCurrentUser = message.isCurrentUser;
 
     Widget avatarWidget = CircleAvatar(
-      backgroundImage: AssetImage(
-        'assets/Jalalito.png'
-      ),
+      backgroundImage: NetworkImage(message.senderImageUrl),
     );
 
     return Row(
       mainAxisAlignment:
-      isCurrentUser ? MainAxisAlignment.start
-          : MainAxisAlignment.end,
+          isCurrentUser ? MainAxisAlignment.start : MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (isCurrentUser) avatarWidget,
@@ -257,7 +251,8 @@ void dispose() {
           Expanded(
             child: TextField(
               controller: _textController,
-              decoration: InputDecoration.collapsed(hintText: 'Type a message'),
+              decoration: InputDecoration.collapsed(
+                  hintText: 'پیام خود را بنویسید ...'),
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
                   _sendMessage(value);
@@ -282,6 +277,7 @@ void dispose() {
   Future<void> _getMessagesOnRefresh() async {
     await _getMessages();
   }
+
 
   @override
   Widget build(BuildContext context) {

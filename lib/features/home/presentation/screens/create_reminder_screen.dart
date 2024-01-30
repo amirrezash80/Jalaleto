@@ -122,7 +122,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
           print(responseBody);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("رویداد شما ثبت شد."),
+              content: Text("یادآوری شما ثبت شد."),
             ),
           );
           Navigator.pop(context);
@@ -140,7 +140,16 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ایجاد رویداد جدید'),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xff455A64), Colors.blueGrey],
+              begin: Alignment.bottomLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Text('ایجاد یادآوری جدید'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -153,7 +162,7 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                 TextFormField(
                   initialValue: title,
                   decoration: InputDecoration(
-                    labelText: 'عنوان رویداد',
+                    labelText: 'عنوان یادآری',
                     border: OutlineInputBorder(),
                   ),
                   style: TextStyle(fontSize: 18.0),
@@ -214,17 +223,18 @@ class _CreateReminderFormState extends State<CreateReminderForm> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
-                TextFormField(
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Days before reminder',
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) {
-                    daysBeforeToRemind = int.tryParse(value) ?? 0;
-                  },
-                ),
+
+                // SizedBox(height: 20),
+                // TextFormField(
+                //   keyboardType: TextInputType.number,
+                //   decoration: InputDecoration(
+                //     labelText: 'Days before reminder',
+                //     border: OutlineInputBorder(),
+                //   ),
+                //   onChanged: (value) {
+                //     daysBeforeToRemind = int.tryParse(value) ?? 0;
+                //   },
+                // ),
                 SizedBox(height: 20),
                 SwitchListTile(
                   title: Text('فعال سازی یادآوری'),
